@@ -1,0 +1,21 @@
+{
+  "name": "launcher-gh-pages",
+  "version": "1.0.0",
+  "description": "Modernized Launcher web presence for GitHub Pages.",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "keywords": [
+    "esp32",
+    "m5stack",
+    "webflasher",
+    "firmware",
+    "github-pages"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

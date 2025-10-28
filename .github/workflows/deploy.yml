@@ -23,41 +23,55 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Download release assets for website
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # Delete all bin and json files and folders
+          set -euo pipefail
+
+          download_release() {
+            local primary_tag="$1"
+            local fallback_tag="$2"
+            local target_dir="$3"
+
+            if gh release view "$primary_tag" >/dev/null 2>&1; then
+              gh release download "$primary_tag" --dir "$target_dir" --clobber
+            else
+              echo "Primary tag $primary_tag not found, falling back to $fallback_tag"
+              gh release download "$fallback_tag" --dir "$target_dir" --clobber
+            fi
+          }
+
           rm -rf Beta Release
-          # Create the folders
-          mkdir -p Beta/bins Release/bins
-          # download the files from Releases
-          gh release download beta --dir ./Beta --clobber
-          gh release download last --dir ./Release --clobber
-          # move *.bin files to */bins folders
-          mv Beta/*.bin Beta/bins
-          mv Release/*.bin Release/bins
+          mkdir -p Beta/bins Beta/manifests Release/bins Release/manifests
 
-      - name: Generate HTML and manifests from Boards
-        run: |
-          rm ./index.html
-          cp ./support_files/flasher.html ./index.html
+          download_release betaRelease beta Beta
+          download_release lastRelease last Release
 
-          # Using Beta because it will always have more board information for now
-          # Can lead to inconsistencies if try to flash a non released device
-          python ./support_files/merge_html.py ./index.html ./Beta/file.html
+          find Beta -maxdepth 1 -type f -name '*.bin' -exec mv {} Beta/bins/ \;
+          find Release -maxdepth 1 -type f -name '*.bin' -exec mv {} Release/bins/ \;
+          find Beta -maxdepth 1 -type f -name '*.json' -exec mv {} Beta/manifests/ \;
+          find Release -maxdepth 1 -type f -name '*.json' -exec mv {} Release/manifests/ \;
 
-          # In the future, have 2 lists, one for Beta and other for Latest, so latest flasher never breaks
-          # python ./support_files/merge_html.py ./index.html ./Beta/file.html "<!-- BETA_BOARDS -->"
-          # python ./support_files/merge_html.py ./index.html ./Release/file.html "<!-- LATEST_BOARDS -->"
+      - name: Build site
+        run: npm run build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: './build'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

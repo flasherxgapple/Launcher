@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Web-based firmware flasher for the Launcher project." />
+    <meta name="color-scheme" content="dark" />
+    <title>Launcher Web Flasher</title>
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+  <body>
+    <header>
+      <div class="navbar">
+        <div class="brand">
+          <p class="brand__title">Launcher Web Flasher</p>
+          <p class="brand__subtitle">Powered by esp-web-tool v10.1.1</p>
+        </div>
+        <button class="navbar__toggle" type="button" aria-expanded="false" aria-controls="site-navigation" data-nav-toggle>
+          Menu
+        </button>
+        <nav class="navbar__menu" id="site-navigation" data-nav tabindex="-1">
+          <ul class="navbar__list">
+            <li><a class="navbar__link" href="index.html">Home</a></li>
+            <li><a class="navbar__link" href="m5lurner.html">Firmware Catalog</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section class="hero" tabindex="-1">
+        <span class="hero__badge">WebUSB ready</span>
+        <h1 class="hero__title">Flash Launcher firmware straight from your browser.</h1>
+        <p class="hero__description">
+          Grant serial access, pick your device family and allow the installer to take care of the rest.
+          The embedded esp-web-tool bundle lives locally in this repository so GitHub Pages deployments stay fast and dependable.
+        </p>
+        <div class="tile">
+          <span class="tile__label">Current selection</span>
+          <span class="tile__value" data-manifest-summary>Release • Auto-detect</span>
+        </div>
+      </section>
+
+      <section class="section reveal-on-scroll" tabindex="-1">
+        <h2 class="section__heading">Pick your release channel</h2>
+        <p class="section__lead">Switch between the stable Release builds and the latest Beta experiments.</p>
+        <form class="card" style="display: grid; gap: 1.5rem;" aria-label="Release channel selection">
+          <label class="donation-card" for="channel-release" style="margin: 0;">
+            <strong>Release</strong>
+            <p>Stable builds curated for day-to-day use.</p>
+            <input
+              type="radio"
+              id="channel-release"
+              name="channel"
+              value="Release"
+              data-release-channel
+              data-label="Release"
+              checked
+            />
+            <span class="button button--ghost">Use Release builds</span>
+          </label>
+
+          <label class="donation-card" for="channel-beta" style="margin: 0;">
+            <strong>Beta</strong>
+            <p>Fresh features that may still be experimental.</p>
+            <input
+              type="radio"
+              id="channel-beta"
+              name="channel"
+              value="Beta"
+              data-release-channel
+              data-label="Beta"
+            />
+            <span class="button button--ghost">Use Beta builds</span>
+          </label>
+        </form>
+      </section>
+
+      <section class="section reveal-on-scroll" tabindex="-1">
+        <h2 class="section__heading">Choose your device profile</h2>
+        <p class="section__lead">Pick a target to load its manifest before connecting your board.</p>
+        <form class="grid grid--two" aria-label="Device selection">
+          <label class="donation-card" for="profile-cardputer">
+            <strong>M5Stack Cardputer</strong>
+            <p>Optimized manifest for the Cardputer experience with launcher overlays.</p>
+            <input
+              type="radio"
+              id="profile-cardputer"
+              name="profile"
+              value="cardputer"
+              data-manifest-option
+              data-manifest-base="cardputer.json"
+              data-label="M5Stack Cardputer"
+              checked
+            />
+            <span class="button button--ghost">Use this manifest</span>
+          </label>
+
+          <label class="donation-card" for="profile-tdisplay">
+            <strong>LilyGO T-Display</strong>
+            <p>Install the Launcher build for LilyGO T-Display and compatible form factors.</p>
+            <input
+              type="radio"
+              id="profile-tdisplay"
+              name="profile"
+              value="tdisplay"
+              data-manifest-option
+              data-manifest-base="tdisplay.json"
+              data-label="LilyGO T-Display"
+            />
+            <span class="button button--ghost">Use this manifest</span>
+          </label>
+
+          <label class="donation-card" for="profile-cyd">
+            <strong>CYD Boards</strong>
+            <p>Streamlined binary set for the CYD-2432S028 including two USB variants.</p>
+            <input
+              type="radio"
+              id="profile-cyd"
+              name="profile"
+              value="cyd"
+              data-manifest-option
+              data-manifest-base="cyd.json"
+              data-label="CYD Series"
+            />
+            <span class="button button--ghost">Use this manifest</span>
+          </label>
+
+          <label class="donation-card" for="profile-generic">
+            <strong>Generic ESP32</strong>
+            <p>Use the generic manifest for boards outside the curated list.</p>
+            <input
+              type="radio"
+              id="profile-generic"
+              name="profile"
+              value="generic"
+              data-manifest-option
+              data-manifest-base="generic.json"
+              data-label="Generic ESP32"
+            />
+            <span class="button button--ghost">Use this manifest</span>
+          </label>
+        </form>
+      </section>
+
+      <section class="section reveal-on-scroll" tabindex="-1">
+        <h2 class="section__heading">Flash your board</h2>
+        <p class="section__lead">
+          Connect your device via USB, ensure no other applications use the serial port, and click the button below. The wizard will walk through erase, upload and verification.
+        </p>
+        <div class="card" style="align-items: center;">
+          <esp-web-install-button></esp-web-install-button>
+          <p class="card__description" style="text-align: center; max-width: 520px;">
+            Having trouble? Make sure you are using Chrome, Edge or another browser with WebUSB support and that this page is served over HTTPS.
+          </p>
+        </div>
+      </section>
+
+      <section class="section reveal-on-scroll" tabindex="-1">
+        <h2 class="section__heading">Need firmware links?</h2>
+        <p class="section__lead">Prefer flashing manually or over OTA? The firmware catalog has direct download URLs for every supported board.</p>
+        <div class="card">
+          <p class="card__description">Jump back to the catalog to review changelogs, stable releases and nightly experiments.</p>
+          <div class="card__actions">
+            <a class="button button--ghost" href="m5lurner.html">Open firmware catalog</a>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <div class="footer__inner">
+        <p>&copy; <span data-year></span> Launcher Project.</p>
+        <p>Local bundle: esp-web-tool v10.1.1.</p>
+      </div>
+    </footer>
+    <script type="module" src="assets/js/main.js"></script>
+    <script type="module" src="assets/js/webflasher.js"></script>
+    <script type="module" src="assets/lib/esp-web-tools-10.1.1/web/install-button.js"></script>
+  </body>
+</html>
