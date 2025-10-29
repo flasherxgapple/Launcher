@@ -1,8 +1,8 @@
 "use strict";
-const API_URL = "https://m5burner-api.m5stack.com/api/firmware";
+const API_URL = "https://api.launcherhub.net/giveMeTheList";
 const CDN_COVER = "https://m5burner-cdn.m5stack.com/cover/";
 const CDN_FIRMWARE = "https://m5burner-cdn.m5stack.com/firmware/";
-const SAMPLE_CARDPUTER_COVER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Crect width='320' height='200' fill='%2300dd00'/%3E%3Ctext x='160' y='110' font-family='Inter,Arial,sans-serif' font-size='32' fill='%2301110b' text-anchor='middle'%3ECardputer%3C/text%3E%3C/svg%3E";
+const SAMPLE_CARDPUTER_COVER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Crect width='320' height='200' fill='%2300dd00'/%3E%3Ctext x='160' y='110' font-family='Inter,Arial,sans-serif' font-size='32' fill='%2301110b' text-anchor='middle'%3ENo Image%3C/text%3E%3C/svg%3E";
 const SAMPLE_TDISPLAY_COVER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Crect width='320' height='200' fill='%23202124'/%3E%3Crect x='48' y='40' width='224' height='120' rx='16' fill='%2300dd00' opacity='0.9'/%3E%3Ctext x='160' y='112' font-family='Inter,Arial,sans-serif' font-size='28' fill='%2301110b' text-anchor='middle'%3ET-Display%3C/text%3E%3C/svg%3E";
 const SAMPLE_FIRMWARE = [
     {
@@ -39,6 +39,16 @@ const resolveCover = (cover) => {
         return value;
     }
     return `${CDN_COVER}${value}`;
+};
+const resolveFirmwareUrl = (file) => {
+    const value = file ?? "";
+    if (value.length === 0) {
+        return "";
+    }
+    if (/^https?:\/\//i.test(value)) {
+        return value;
+    }
+    return `${CDN_FIRMWARE}${value}`;
 };
 const DESCRIPTION_COLLAPSED_HEIGHT = 160;
 const TRANSPARENT_PIXEL = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
@@ -205,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
             const option = document.createElement("option");
-            option.value = `${CDN_FIRMWARE}${version.file}`;
+            option.value = resolveFirmwareUrl(version.file);
             option.textContent = version.version || `Build ${index + 1}`;
             option.dataset.published = String(version.published ?? false);
             option.dataset.versionLabel = version.version || `build-${index + 1}`;
