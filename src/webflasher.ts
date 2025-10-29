@@ -25,14 +25,12 @@ const releaseOptions = [
   {
     value: "Release",
     label: "Last Release",
-    description: "Stable builds recommended for everyday use.",
-    cta: "Use Last Release"
+    description: "Stable builds recommended for everyday use."
   },
   {
     value: "Beta",
     label: "Beta Release",
-    description: "Early-access updates with the newest features.",
-    cta: "Use Beta Release"
+    description: "Early-access updates with the newest features."
   }
 ] as const;
 
@@ -54,6 +52,9 @@ const ensureSelectionStyles = () => {
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
+    .selection-card--device {
+      padding-bottom: 72px;
+    }
     .selection-card:hover {
       transform: translateY(-2px);
       border-color: rgba(0, 221, 0, 0.4);
@@ -69,9 +70,46 @@ const ensureSelectionStyles = () => {
       outline: 2px solid rgba(224, 210, 4, 0.7);
       outline-offset: 3px;
     }
-    .selection-card__cta {
-      justify-self: start;
-      font-size: 0.9rem;
+    .selection-card-wrapper {
+      position: relative;
+      height: 100%;
+    }
+    .selection-card-wrapper .selection-card {
+      width: 100%;
+      height: 100%;
+    }
+    .selection-card__store-link {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(20, 24, 28, 0.9);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+      color: #facc15;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      text-decoration: none;
+      pointer-events: auto;
+    }
+    .selection-card__store-link:hover,
+    .selection-card__store-link:focus-visible {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45);
+      outline: none;
+    }
+    .selection-card__store-link svg {
+      width: 22px;
+      height: 22px;
+    }
+    [data-device-container] {
+      grid-auto-rows: 1fr;
+    }
+    [data-device-container] > .selection-card-wrapper {
+      height: 100%;
     }
   `;
   document.head.appendChild(style);
@@ -81,7 +119,6 @@ const createSelectionCard = (config: {
   title: string;
   subtitle?: string;
   value: string;
-  cta: string;
 }): HTMLButtonElement => {
   const button = document.createElement("button");
   button.type = "button";
@@ -91,7 +128,6 @@ const createSelectionCard = (config: {
   button.innerHTML = `
     <strong>${config.title}</strong>
     ${config.subtitle ? `<p>${config.subtitle}</p>` : ""}
-    <span class="button button--ghost selection-card__cta">${config.cta}</span>
   `;
   return button;
 };
@@ -104,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const vendorPlaceholder = document.querySelector<HTMLElement>("[data-vendor-empty]");
   const deviceContainer = document.querySelector<HTMLElement>("[data-device-container]");
   const descriptionTarget = document.querySelector<HTMLElement>("[data-device-description]");
-  const linkTarget = document.querySelector<HTMLAnchorElement>("[data-device-link]");
   const vendorSection = document.querySelector<HTMLElement>("[data-vendor-section]");
   const deviceSection = document.querySelector<HTMLElement>("[data-device-section]");
   const installSection = document.querySelector<HTMLElement>("[data-install-section]");
@@ -181,10 +216,6 @@ document.addEventListener("DOMContentLoaded", () => {
         descriptionTarget.textContent = "";
       }
     }
-    if (linkTarget) {
-      linkTarget.hidden = true;
-      linkTarget.href = "";
-    }
   };
 
   const highlightCards = (cards: HTMLButtonElement[], selected: string) => {
@@ -231,16 +262,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    if (linkTarget) {
-      if (device.link) {
-        linkTarget.hidden = false;
-        linkTarget.href = device.link;
-      } else {
-        linkTarget.hidden = true;
-        linkTarget.href = "";
-      }
-    }
-
     const manifest = {
       name: device.name,
       new_install_prompt_erase: true,
@@ -282,9 +303,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = createSelectionCard({
         title: device.name,
         subtitle: device.description ?? "Manifest generated automatically.",
-        value: device.id,
-        cta: "Select device"
+        value: device.id
       });
+      card.classList.add("selection-card--device");
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "selection-card-wrapper";
+      wrapper.appendChild(card);
 
       card.addEventListener("click", () => {
         state.deviceId = device.id;
@@ -293,8 +318,30 @@ document.addEventListener("DOMContentLoaded", () => {
         scrollToSection(installSection);
       });
 
+      if (device.link) {
+        const link = document.createElement("a");
+        link.className = "selection-card__store-link";
+        link.href = device.link;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.setAttribute("aria-label", `Open ${device.name} device link in a new tab`);
+        link.title = `Open ${device.name} link`;
+        link.innerHTML = `
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              fill="currentColor"
+              d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10
+              0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zm-.73-3.73L18.6
+              6H5.21l-.94-2H1v2h2l3.6 7.59-1.35
+              2.45C4.52 16.37 5.48 18 7 18h12v-2H7l1.1-2h7.45c.75 0 1.41-.41 1.75-1.03z"
+            ></path>
+          </svg>
+        `;
+        wrapper.appendChild(link);
+      }
+
       deviceCards.push(card);
-      deviceContainer.appendChild(card);
+      deviceContainer.appendChild(wrapper);
     });
 
     highlightCards(deviceCards, state.deviceId);
@@ -332,8 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = createSelectionCard({
         title: vendorName,
         subtitle: `${visibleDevices.length} device(s) available`,
-        value: vendorName,
-        cta: "Select vendor"
+        value: vendorName
       });
 
       card.addEventListener("click", () => {
@@ -376,8 +422,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const card = createSelectionCard({
         title: option.label,
         subtitle: option.description,
-        value: option.value,
-        cta: option.cta
+        value: option.value
       });
 
       card.addEventListener("click", () => {

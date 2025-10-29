@@ -49,6 +49,15 @@ a:focus {
   filter: drop-shadow(0 0 6px rgba(0, 221, 0, 0.35));
 }
 
+.text-highlight {
+  color: var(--primary);
+}
+
+.text-highlight--glow {
+  color: var(--primary);
+  text-shadow: 0 0 18px rgba(0, 221, 0, 0.45);
+}
+
 header {
   position: sticky;
   top: 0;
@@ -61,7 +70,7 @@ header {
 .navbar {
   margin: 0 auto;
   max-width: 1080px;
-  padding: 20px clamp(16px, 4vw, 32px);
+  padding: 4px clamp(16px, 4vw, 32px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -133,35 +142,65 @@ header {
 .hero {
   max-width: 1080px;
   margin: 0 auto;
-  padding: clamp(32px, 8vw, 60px) clamp(16px, 3.5vw, 28px) clamp(20px, 6vw, 40px);
+  padding: clamp(20px, 4vw, 60px) clamp(14px, 3vw, 28px) clamp(15px, 4vw, 30px);
+  /* padding: clamp(36px, 8vw, 72px) clamp(18px, 3.5vw, 32px) clamp(28px, 6vw, 56px); */
   display: grid;
-  gap: clamp(24px, 6vw, 48px);
+  gap: clamp(28px, 2vw, 56px);
   scroll-margin-top: calc(var(--header-height) + 16px);
+}
+
+.hero--landing {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(140deg, rgba(9, 32, 16, 0.95), rgba(12, 18, 15, 0.92) 45%, rgba(6, 12, 9, 0.88));
+  border: 1px solid rgba(0, 221, 0, 0.22);
+  box-shadow: 0 50px 120px rgba(0, 40, 0, 0.45);
+  overflow: hidden;
+}
+
+.hero--landing::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(0, 221, 0, 0.22), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(224, 210, 4, 0.12), transparent 60%);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.hero--landing > * {
+  position: relative;
+  z-index: 1;
 }
 
 .hero__badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   border-radius: 999px;
-  padding: 8px 18px;
-  background: rgba(0, 221, 0, 0.12);
-  border: 1px solid rgba(0, 221, 0, 0.35);
-  font-size: 0.9rem;
-  letter-spacing: 0.08em;
+  padding: 10px 28px;
+  background: rgba(0, 221, 0, 0.18);
+  border: 1px solid rgba(0, 221, 0, 0.4);
+  font-size: 0.95rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 221, 0, 0.2);
 }
 
 .hero__title {
   margin: 0;
-  font-size: clamp(2.5rem, 3vw + 2rem, 4rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-size: clamp(2.8rem, 3.4vw + 2rem, 4.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
 }
 
 .hero__description {
   margin: 0;
-  font-size: clamp(1.05rem, 0.5vw + 1rem, 1.3rem);
+  padding-top: 24px;
+  border-top: 1px solid rgba(245, 248, 242, 0.12);
+  font-size: clamp(1.05rem, 0.55vw + 1rem, 1.28rem);
   color: var(--text-subtle);
   max-width: 720px;
 }
@@ -169,7 +208,8 @@ header {
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
+  margin-top: 12px;
 }
 
 .button {
@@ -205,7 +245,7 @@ header {
   position: relative;
   margin: 0 auto;
   max-width: 1080px;
-  padding: clamp(32px, 8vw, 72px) clamp(16px, 3.5vw, 28px);
+  padding: clamp(32px, 4vw, 72px) clamp(16px, 3.5vw, 28px);
 }
 
 .section__heading {
@@ -396,26 +436,45 @@ header {
   gap: clamp(16px, 4vw, 28px);
 }
 
-.hero--split {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+.hero__header {
+  display: grid;
+  gap: clamp(16px, 3vw, 24px);
+}
+
+.hero__body {
+  display: grid;
+  gap: clamp(24px, 4vw, 36px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, clamp(320px, 32vw, 420px));
   align-items: center;
 }
 
 .hero__content {
   display: grid;
-  gap: clamp(16px, 3vw, 24px);
+  gap: clamp(18px, 3.5vw, 28px);
+  max-width: 620px;
 }
 
 .hero__media {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: clamp(320px, 32vw, 420px);
 }
 
 .hero__media img {
   width: min(360px, 100%);
   border-radius: var(--radius-md);
-  box-shadow: 0 24px 60px rgba(0, 221, 0, 0.15);
+  border: 3px solid rgba(0, 221, 0, 0.55);
+  box-shadow: 0 26px 70px rgba(0, 221, 0, 0.25);
+}
+
+@media (max-width: 900px) {
+  .hero__body {
+    grid-template-columns: 1fr;
+  }
+  .hero__media {
+    justify-content: flex-start;
+  }
 }
 
 .page-home {
@@ -476,7 +535,7 @@ header {
   top: calc(var(--header-height) + 8px);
   z-index: 6;
   max-width: 1080px;
-  margin: 0 auto clamp(16px, 4vw, 28px);
+  /* margin: 0 auto clamp(16px, 4vw, 28px); */
   padding: 0 clamp(16px, 3.5vw, 28px);
 }
 
