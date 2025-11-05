@@ -625,7 +625,7 @@ type EwDialogElement = HTMLElement & {
 };
 
 const injectDialogSurfaceStyles = (dialog: EwDialogElement) => {
-  if (!dialog || !dialog.closest(".page-webflasher")) {
+  if (!dialog) {
     return;
   }
 
@@ -638,13 +638,22 @@ const injectDialogSurfaceStyles = (dialog: EwDialogElement) => {
   style.id = "webflasher-ew-dialog-style";
   style.textContent = `
     dialog {
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    .container {
+      box-sizing: border-box;
       background: rgba(12, 18, 21, 0.96);
       border-radius: var(--radius-lg, 24px);
-      border: 1px solid rgba(0, 221, 0, 0.24);
+      border: 1px solid var(--primary, #00dd00);
       box-shadow: 0 34px 120px rgba(0, 221, 0, 0.25);
       backdrop-filter: blur(24px);
       color: var(--text);
-      padding: 24px 28px 28px;
+    }
+    .container::before {
+      background: rgba(12, 18, 21, 0.96);
+      border-radius: inherit;
     }
     dialog::backdrop {
       background: rgba(6, 10, 12, 0.7);

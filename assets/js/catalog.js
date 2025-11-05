@@ -1,4 +1,21 @@
 "use strict";
+const getPublishedTimestamp = (value) => {
+    if (!value) {
+        return Number.NEGATIVE_INFINITY;
+    }
+    const timestamp = Date.parse(value);
+    return Number.isNaN(timestamp) ? Number.NEGATIVE_INFINITY : timestamp;
+};
+const sortVersionsByPublishedDate = (versions) => {
+    return [...versions].sort((a, b) => {
+        const aTime = getPublishedTimestamp(a.published_at);
+        const bTime = getPublishedTimestamp(b.published_at);
+        if (aTime !== bTime) {
+            return bTime - aTime;
+        }
+        return 0;
+    });
+};
 const API_URL = "https://api.launcherhub.net/giveMeTheList";
 const CDN_COVER = "https://m5burner-cdn.m5stack.com/cover/";
 const CDN_FIRMWARE = "https://m5burner-cdn.m5stack.com/firmware/";
@@ -324,7 +341,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
     const hydrate = (entries) => {
-        firmware = entries.filter((item) => Array.isArray(item.versions) && item.versions.some((version) => Boolean(version.file)));
+        const sortedEntries = entries.map((item) => ({
+            ...item,
+            versions: sortVersionsByPublishedDate(item.versions ?? [])
+        }));
+        firmware = sortedEntries.filter((item) => Array.isArray(item.versions) && item.versions.some((version) => Boolean(version.file)));
         filtered = [...firmware];
         populateCategories();
         applyFilters();
