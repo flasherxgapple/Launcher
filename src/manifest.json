@@ -417,6 +417,14 @@
             "id": "Phantom_S024R"
         },
         {
+            "display": true,
+            "name": "WaveSentry",
+            "description": "",
+            "link": "https://opensourcesdrlab.com/products/aifw-wavesentry-esp32?VariantsId=10330",
+            "family": "ESP32",
+            "id": "WaveSentry-R1"
+        },
+        {
             "display": false,
             "name": "Elecrow ESP32 2.4in",
             "description": "",
