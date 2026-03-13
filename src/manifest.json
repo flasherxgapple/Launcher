@@ -373,6 +373,22 @@
             "link": "https://www.lilygo.cc/products/t-display-s3-amoled-plus?bg_ref=sDI8Bh4HmO",
             "family": "ESP32-S3",
             "id": "lilygo-t-display-S3-amoled"
+        },
+        {
+            "display": false,
+            "name": "T-Watch S3",
+            "description": "",
+            "link": "https://www.lilygo.cc/products/t-watch-s3?bg_ref=sDI8Bh4HmO",
+            "family": "ESP32-S3",
+            "id": "lilygo-t-watch-s3"
+        },
+        {
+            "display": false,
+            "name": "T-Watch ULTRA",
+            "description": "",
+            "link": "https://www.lilygo.cc/products/t-watch-ultra?bg_ref=sDI8Bh4HmO",
+            "family": "ESP32-S3",
+            "id": "lilygo-t-watch-ultra"
         }
     ],
     "Custom": [
