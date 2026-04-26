@@ -87,12 +87,15 @@ Things that needs to be done in next updates
 ## Latest Changelog
 * 2.6.x:
      * [ ] Custom partition builder (no more hardcoded partition lists)
+
 * 2.6.9:
      * [X] Port to NM-CYD-C5
      * [x] Port to 3248W535C
      * [x] Fix issue where brightness wasnt being saved
+     * [x] Fix issue where custom "downloads" folder wasn't being used
+     * [x] Fix issue where some fimware downloads waren't working due to prohibited characters on firmware name
+     * [x] Added Touch Calibration for XPT2046 driven devices (Resistive touchscreens, like: CYD, Marauder, Phantom, T-HMI), It will be prompted when no calibration data is found (First boot), or can be started on `CFG>Calibrate Touch`, or by sending "calibrate" over Serial.
      * [x] Adds "OFF" Option to main screen to turn off (DeepSleep when PMIC is not available) the device.
-     * [x] Fox issue where custom "downloads" folder wasn't being used
 
 * 2.6.8:
      * [x] Increased Gamestation Partitions sizes. https://github.com/bmorcelli/Launcher/issues/299

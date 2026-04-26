@@ -7,6 +7,7 @@
 #include "nvs_handle.hpp"
 #include "onlineLauncher.h"
 #include "partitioner.h"
+#include "powerSave.h"
 #include "sd_functions.h"
 #include <FS.h>
 #include <SD.h>
@@ -282,6 +283,9 @@ void settings_menu() {
     if (MAX_FAT_vfs > 0) options.push_back({"Restore FAT Vfs", [=]() { restorePartition("vfs"); }});
     if (dev_mode) options.push_back({"Boot Animation", [=]() { initDisplayLoop(); }});
     if (dev_mode) options.push_back({"Deactivate Dev", [=]() { dev_mode = false; }});
+#if defined(HAS_RESISTIVE_TOUCH)
+    options.push_back({"Calibrate Touch", calibrateTouch});
+#endif
     options.push_back({"Restart", [=]() { FREE_TFT reboot(); }});
 #if !defined(CARDPUTER)
     options.push_back({"Turn-off", [=]() { powerOff(); }});
@@ -1080,3 +1084,242 @@ void saveConfigs() {
     saveIntoNVS();
     saveWifiIntoNVS();
 }
+
+#if defined(HAS_RESISTIVE_TOUCH)
+#include <CYD28_TouchscreenR.h>
+
+namespace {
+constexpr const char *TOUCH_CAL_NAMESPACE = "touch_cal";
+
+bool validTouchCalibration(uint16_t x0, uint16_t x1, uint16_t y0, uint16_t y1) {
+    return x0 > 0 && x1 > 0 && y0 > 0 && y1 > 0 && x0 != x1 && y0 != y1;
+}
+
+esp_err_t readTouchCalibrationItems(
+    nvs::NVSHandle &handle, uint16_t &x0, uint16_t &x1, uint16_t &y0, uint16_t &y1, uint8_t &rot
+) {
+    esp_err_t err = handle.get_item("x0", x0);
+    err |= handle.get_item("x1", x1);
+    err |= handle.get_item("y0", y0);
+    err |= handle.get_item("y1", y1);
+    err |= handle.get_item("r", rot);
+    if (err == ESP_OK) return err;
+
+    err = handle.get_item("x", x0);
+    err |= handle.get_item("X", x1);
+    err |= handle.get_item("y", y0);
+    err |= handle.get_item("Y", y1);
+    err |= handle.get_item("r", rot);
+    return err;
+}
+} // namespace
+
+// Load touch calibration from NVS namespace "touch_cal"
+// Returns true if calibration data is found, provides data via parameters
+bool loadTouchCalibration() {
+    uint16_t x0;
+    uint16_t x1;
+    uint16_t y0;
+    uint16_t y1;
+    uint8_t rot;
+    esp_err_t err = ESP_OK;
+    auto nvsHandle = openNamespace(TOUCH_CAL_NAMESPACE, NVS_READONLY, err);
+    if (!nvsHandle) {
+        log_i("loadTouchCalibration: no %s namespace found", TOUCH_CAL_NAMESPACE);
+        return false;
+    }
+
+    x0 = 0;
+    x1 = 0;
+    y0 = 0;
+    y1 = 0;
+    rot = 0;
+
+    err = readTouchCalibrationItems(*nvsHandle, x0, x1, y0, y1, rot);
+    rot &= 0x07;
+
+    if (err == ESP_OK && validTouchCalibration(x0, x1, y0, y1)) {
+        uint16_t parameters[5] = {x0, x1, y0, y1, rot};
+        extern CYD28_TouchR touch;
+        touch.setTouch(parameters);
+        Serial.printf(
+            "loadTouchCalibration: Loaded calibration - x0:%u x1:%u y0:%u y1:%u rot:%u\n", x0, x1, y0, y1, rot
+        );
+        return true;
+    }
+
+    Serial.printf("loadTouchCalibration: Failed to load valid calibration data: %s\n", esp_err_to_name(err));
+    return false;
+}
+
+// Save touch calibration to NVS namespace "touch_cal"
+bool saveTouchCalibration(uint16_t x0, uint16_t x1, uint16_t y0, uint16_t y1, uint8_t rot) {
+    if (!validTouchCalibration(x0, x1, y0, y1)) {
+        Serial.printf(
+            "saveTouchCalibration: Invalid calibration - x0:%u x1:%u y0:%u y1:%u rot:%u\n",
+            x0,
+            x1,
+            y0,
+            y1,
+            rot
+        );
+        return false;
+    }
+
+    esp_err_t err = ESP_OK;
+    auto nvsHandle = openNamespace(TOUCH_CAL_NAMESPACE, NVS_READWRITE, err);
+    if (!nvsHandle) {
+        Serial.printf("saveTouchCalibration: Failed to open %s namespace\n", TOUCH_CAL_NAMESPACE);
+        return false;
+    }
+
+    rot &= 0x07;
+    err |= nvsHandle->set_item("x0", x0);
+    err |= nvsHandle->set_item("x1", x1);
+    err |= nvsHandle->set_item("y0", y0);
+    err |= nvsHandle->set_item("y1", y1);
+    err |= nvsHandle->set_item("r", rot);
+
+    if (err == ESP_OK) { err = nvsHandle->commit(); }
+
+    if (err == ESP_OK) {
+        Serial.printf(
+            "saveTouchCalibration: Saved calibration - x0:%u x1:%u y0:%u y1:%u rot:%u\n", x0, x1, y0, y1, rot
+        );
+        return true;
+    }
+
+    Serial.printf("saveTouchCalibration: Failed to save calibration data: %s\n", esp_err_to_name(err));
+    return false;
+}
+void calibrateTouch() {
+    extern CYD28_TouchR touch; // Objeto declarado nos interface.cpp que usam essa biblioteca.
+    tft->setRotation(0);
+    tft->fillScreen(BGCOLOR);
+    wakeUpScreen();
+    int saved_dimmerSet = dimmerSet;
+    dimmerSet = 0;
+    const uint16_t _w = tft->width();
+    const uint16_t _h = tft->height();
+
+    struct RawTouchPoint {
+        uint16_t x;
+        uint16_t y;
+    };
+
+    auto drawCenteredLine = [&](const char *text, int16_t y) { tft->drawCentreString(text, _w / 2, y, 1); };
+
+    tft->setTextColor(FGCOLOR, BGCOLOR);
+    tft->setTextSize(FP);
+    const int16_t lineHeight = LH;
+    int16_t y = (_h - lineHeight * 4) / 2;
+    drawCenteredLine("Launcher Touch Calibration", y);
+    y += lineHeight;
+    drawCenteredLine("---------------------------", y);
+    y += lineHeight;
+    drawCenteredLine("Touch the screen corners", y);
+    y += lineHeight;
+    drawCenteredLine("indicated by the arrows", y);
+    delay(500);
+
+    auto drawArrow = [&](uint8_t corner) {
+        tft->fillRect(0, 0, 30, 30, BGCOLOR);
+        tft->fillRect(0, _h - 30, 30, 30, BGCOLOR);
+        tft->fillRect(_w - 30, 0, 30, 30, BGCOLOR);
+        tft->fillRect(_w - 30, _h - 30, 30, 30, BGCOLOR);
+        const int16_t edge = 0;
+        const int16_t len = 28;
+        const int16_t head = 8;
+        const bool right = corner == 1 || corner == 2;
+        const bool bottom = corner >= 2;
+        const int16_t x0 = right ? _w - edge : edge;
+        const int16_t y0 = bottom ? _h - edge : edge;
+        const int16_t sx = right ? -1 : 1;
+        const int16_t sy = bottom ? -1 : 1;
+
+        tft->drawLine(x0 + sx * len, y0 + sy * len, x0, y0, FGCOLOR);
+        tft->drawLine(x0, y0, x0 + sx * head, y0, FGCOLOR);
+        tft->drawLine(x0, y0, x0, y0 + sy * head, FGCOLOR);
+        tft->drawLine(x0 + 1, y0 + sy, x0 + sx * (head + 1), y0 + sy, FGCOLOR);
+        tft->drawLine(x0 + sx, y0 + 1, x0 + sx, y0 + sy * (head + 1), FGCOLOR);
+    };
+
+    auto readRawPoint = [&]() {
+        while (touch.touched()) { delay(10); }
+        while (!touch.touched()) { delay(10); }
+
+        uint32_t sx = 0;
+        uint32_t sy = 0;
+        const uint8_t samples = 6;
+        for (uint8_t i = 0; i < samples; ++i) {
+            auto p = touch.getPointRaw();
+            sx += p.x;
+            sy += p.y;
+            delay(18);
+        }
+
+        while (touch.touched()) { delay(10); }
+        return RawTouchPoint{uint16_t(sx / samples), uint16_t(sy / samples)};
+    };
+
+    RawTouchPoint p[4];
+    for (uint8_t i = 0; i < 4; ++i) {
+        drawArrow(i);
+        p[i] = readRawPoint();
+    }
+
+    const int32_t leftRawX = (int32_t(p[0].x) + p[3].x) / 2;
+    const int32_t rightRawX = (int32_t(p[1].x) + p[2].x) / 2;
+    const int32_t topRawX = (int32_t(p[0].x) + p[1].x) / 2;
+    const int32_t bottomRawX = (int32_t(p[2].x) + p[3].x) / 2;
+
+    const int32_t leftRawY = (int32_t(p[0].y) + p[3].y) / 2;
+    const int32_t rightRawY = (int32_t(p[1].y) + p[2].y) / 2;
+    const int32_t topRawY = (int32_t(p[0].y) + p[1].y) / 2;
+    const int32_t bottomRawY = (int32_t(p[2].y) + p[3].y) / 2;
+
+    const uint8_t swapXY = abs(rightRawX - leftRawX) < abs(rightRawY - leftRawY);
+    const uint8_t invertX = swapXY ? p[0].y > p[1].y : p[0].x > p[1].x;
+    const uint8_t invertY = swapXY ? p[0].x > p[3].x : p[0].y > p[3].y;
+    // swapXY and invertX are inverted to keep compatibility with current interface.cpp files..
+    // need to adjust orientation on the lib to some stardard code and adjust the interface.cpp of the devices
+    // that uses it. I´m not doint it now because I dont have all affected devices, jusk have a brief
+    // knowladge of what is currently working
+    const uint8_t rot_true = swapXY | (invertX << 1) | (invertY << 2); // must use this in the future (or not)
+    const uint8_t rot = !swapXY | (!invertX << 1) | (invertY << 2);    // remove ! in a near furute
+
+    uint16_t xMin = !swapXY ? p[0].y : p[0].x; // remove ! in a near furute
+    uint16_t xMax = xMin;
+    uint16_t yMin = !swapXY ? p[0].x : p[0].y; // remove ! in a near furute
+    uint16_t yMax = yMin;
+    for (uint8_t i = 1; i < 4; ++i) {
+        const uint16_t rx = !swapXY ? p[i].y : p[i].x; // remove ! in a near furute
+        const uint16_t ry = !swapXY ? p[i].x : p[i].y; // remove ! in a near furute
+        if (rx < xMin) xMin = rx;
+        if (rx > xMax) xMax = rx;
+        if (ry < yMin) yMin = ry;
+        if (ry > yMax) yMax = ry;
+    }
+
+    uint16_t parameters[5] = {xMin, xMax, yMin, yMax, rot};
+    touch.setTouch(parameters);
+    saveTouchCalibration(xMin, xMax, yMin, yMax, rot);
+
+    Serial.printf(
+        "calibrateTouch: x0:%u x1:%u y0:%u y1:%u rot:%u (rot_true:%u) swap:%u invX:%u invY:%u\n",
+        xMin,
+        xMax,
+        yMin,
+        yMax,
+        rot,
+        rot_true,
+        swapXY,
+        invertX,
+        invertY
+    );
+    tft->setRotation(rotation);
+    tft->fillScreen(BGCOLOR);
+    wakeUpScreen();
+    dimmerSet = saved_dimmerSet;
+}
+#endif

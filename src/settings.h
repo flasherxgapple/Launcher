@@ -53,4 +53,11 @@ void chargeMode();
 JsonObject ensureSettingsRoot();
 bool saveSessionToken(const String &token);
 String loadSessionToken();
+
+#if defined(HAS_RESISTIVE_TOUCH)
+bool loadTouchCalibration();
+bool saveTouchCalibration(uint16_t x0, uint16_t x1, uint16_t y0, uint16_t y1, uint8_t rot);
+void calibrateTouch();
+#endif
+
 #endif

@@ -74,10 +74,3 @@ void powerOff() {
     M5.Power.powerOff();
     while (1) delay(100);
 }
-
-/*********************************************************************
-** Function: checkReboot
-** location: mykeyboard.cpp
-** Btn logic to tornoff the device (name is odd btw)
-**********************************************************************/
-void checkReboot() {}

@@ -187,7 +187,7 @@ void _setBrightness(uint8_t brightval) {
 **********************************************************************/
 void InputHandler(void) {
     static long d_tmp = millis();
-    bool touched = touch.touched(); // read every cycle to skip bad readings
+    bool touched = touch.touched();            // read every cycle to skip bad readings
     if (millis() - d_tmp > 250 || LongPress) { // I know R3CK.. I Should NOT nest if statements..
         // but it is needed to not keep SPI bus used without need, it save resources
         TouchPoint t;
@@ -196,6 +196,9 @@ void InputHandler(void) {
 #endif
         if (touched) {
             auto t = touch.getPointScaled();
+            auto t2 = touch.getPointRaw();
+            Serial.printf("\nRAW: Touch Pressed on x=%d, y=%d, rot: %d", t2.x, t2.y, rotation);
+            Serial.printf("\nBEF: Touch Pressed on x=%d, y=%d, rot: %d", t.x, t.y, rotation);
             d_tmp = millis();
 #ifdef DONT_USE_INPUT_TASK // need to reset the variables to avoid ghost click
             NextPress = false;
@@ -206,14 +209,6 @@ void InputHandler(void) {
             EscPress = false;
             AnyKeyPress = false;
             touchPoint.pressed = false;
-#endif
-
-#ifdef CYD28_TouchR_MOSI
-#if TFT_MOSI == CYD28_TouchR_MOSI // S024R is inverted
-            int tmp = t.x;
-            t.x = t.y;
-            t.y = tmp;
-#endif
 #endif
 
             if (rotation == 3) {
@@ -230,8 +225,7 @@ void InputHandler(void) {
                 t.x = t.y;
                 t.y = (tftHeight + 20) - tmp;
             }
-            Serial.printf("\nTouch Pressed on x=%d, y=%d, rot=%d\n", t.x, t.y, rotation);
-            log_i("\nTouch Pressed on x=%d, y=%d, rot=%d\n", t.x, t.y, rotation);
+            Serial.printf("\nAFT: Touch Pressed on x=%d, y=%d, rot: %d\n", t.x, t.y, rotation);
 #if defined(CYD28_DISPLAY_VER_RES_MAX) && !defined(HAS_CAPACITIVE_TOUCH)
 #if CYD28_DISPLAY_VER_RES_MAX > 340
             auto t2 = touch.getPointRaw();
@@ -255,16 +249,18 @@ void InputHandler(void) {
 #endif
 }
 
-/*********************************************************************
-** Function: powerOff
-** location: mykeyboard.cpp
-** Turns off the device (or try to)
-**********************************************************************/
-// void powerOff() {}
-
-/*********************************************************************
-** Function: checkReboot
-** location: mykeyboard.cpp
-** Btn logic to tornoff the device (name is odd btw)
-**********************************************************************/
-void checkReboot() {}
+void reboot() {
+    // Some Marauder CYDs use GPIO 1/3 with GPS, these pins are used for USB Serial too
+    // so it conflicts and as Serial is already started with launcher, we need to
+    // finish this process to release the pins. Same for some Bruce mods
+#if defined(CYD_RELEASE_SERIAL)
+    Serial.print("\r\n");
+    Serial.flush();
+    Serial.end();
+    vTaskDelay(pdMS_TO_TICKS(50));
+    pinMode(1, INPUT);
+    pinMode(3, INPUT);
+    vTaskDelay(pdMS_TO_TICKS(10));
+#endif
+    ESP.restart();
+}

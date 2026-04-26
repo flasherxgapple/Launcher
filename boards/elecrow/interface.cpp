@@ -1,19 +1,12 @@
 #include "nvs.h"
 #include "nvs_handle.hpp"
 #include "powerSave.h"
+#include <CYD28_TouchscreenR.h>
 #include <Wire.h>
 #include <interface.h>
 
-namespace {
-std::unique_ptr<nvs::NVSHandle> openNamespace(const char *ns, nvs_open_mode_t mode, esp_err_t &err) {
-    auto handle = nvs::open_nvs_handle(ns, mode, &err);
-    if (err != ESP_OK) {
-        log_i("openNamespace(%s) failed: %d", ns, err);
-        return nullptr;
-    }
-    return handle;
-}
-} // namespace
+CYD28_TouchR touch(TFT_HEIGHT, TFT_WIDTH);
+
 #ifndef TFT_BRIGHT_CHANNEL
 #define TFT_BRIGHT_CHANNEL 0
 #define TFT_BRIGHT_FREQ 5000
@@ -27,7 +20,8 @@ std::unique_ptr<nvs::NVSHandle> openNamespace(const char *ns, nvs_open_mode_t mo
 ** Description:   initial setup for the device
 ***************************************************************************************/
 void _setup_gpio() {
-    pinMode(33, OUTPUT); // touch CS
+    pinMode(33, OUTPUT);
+    digitalWrite(33, HIGH);
 }
 
 /***************************************************************************************
@@ -36,56 +30,14 @@ void _setup_gpio() {
 ** Description:   second stage gpio setup to make a few functions work
 ***************************************************************************************/
 void _post_setup_gpio() {
+    if (!touch.begin(&SPI)) {
+        Serial.println("Touch IC not Started");
+        log_i("Touch IC not Started");
+    } else Serial.println("Touch IC Started");
     // Brightness control must be initialized after tft in this case @Pirata
     pinMode(TFT_BL, OUTPUT);
     ledcAttach(TFT_BL, TFT_BRIGHT_FREQ, TFT_BRIGHT_Bits);
     ledcWrite(TFT_BL, bright);
-    esp_err_t err = ESP_OK;
-    uint16_t calData[5];
-    auto nvsHandle = openNamespace("calData", NVS_READWRITE, err);
-    if (nvsHandle) {
-        err = nvsHandle->get_item("x0", calData[0]);
-        err |= nvsHandle->get_item("x1", calData[1]);
-        err |= nvsHandle->get_item("y0", calData[2]);
-        err |= nvsHandle->get_item("y1", calData[3]);
-        err |= nvsHandle->get_item("r", calData[4]);
-    } else {
-        err = 1;
-        Serial.println("Can't access calData namespace in NVS");
-    }
-
-    if (err) {
-        Serial.println("No calData available");
-        tft->setRotation(1);
-        tft->setTextSize(2);
-        tft->drawCentreString("Touch corners as indicated", TFT_HEIGHT / 2, TFT_WIDTH / 2, 1);
-        tft->calibrateTouch(calData, TFT_GREEN, TFT_BLACK, 15);
-        tft->setTouch(calData);
-        if (nvsHandle) {
-            Serial.println("Saving values into NVS");
-            err = ESP_OK;
-            err = nvsHandle->set_item("x0", calData[0]);
-            err |= nvsHandle->set_item("x1", calData[1]);
-            err |= nvsHandle->set_item("y0", calData[2]);
-            err |= nvsHandle->set_item("y1", calData[3]);
-            err |= nvsHandle->set_item("r", calData[4]);
-            if (err != ESP_OK) {
-                Serial.printf("Failed to store settings in NVS: %d\n", err);
-            } else {
-                Serial.println("Settings stored in NVS successfully");
-            }
-            tft->setRotation(rotation);
-        }
-    } else {
-        tft->setTouch(calData);
-    }
-    Serial.print("\ncalData[5] = ");
-    Serial.print("{ ");
-    for (uint8_t i = 0; i < 5; i++) {
-        Serial.print(calData[i]);
-        if (i < 4) Serial.print(", ");
-    }
-    Serial.println(" }");
 }
 
 /*********************************************************************
@@ -115,52 +67,30 @@ void _setBrightness(uint8_t brightval) {
 ** Function: InputHandler
 ** Handles the variables PrevPress, NextPress, SelPress, AnyKeyPress and EscPress
 **********************************************************************/
-struct TouchPointPro {
-    uint16_t x;
-    uint16_t y;
-};
 void InputHandler(void) {
-    TouchPointPro t;
-    static long d_tmp = millis();
-    const uint16_t w = tftWidth;
-    const uint16_t h = tftHeight + 20;
-    if (millis() - d_tmp > 250 || LongPress) { // I know R3CK.. I Should NOT nest if statements..
-        // but it is needed to not keep SPI bus used without need, it save resources
-#ifdef DONT_USE_INPUT_TASK
-        checkPowerSaveTime();
-#endif
-        bool pressed = tft->getTouch(&t.x, &t.y);
-        if (pressed) {
-            d_tmp = millis();
-            // need to reset the variables to avoid ghost click
-            NextPress = false;
-            PrevPress = false;
-            UpPress = false;
-            DownPress = false;
-            SelPress = false;
-            EscPress = false;
-            AnyKeyPress = false;
-            touchPoint.pressed = false;
-
-            Serial.printf("\nRaw Touch on   x=%d, y=%d, rot=%d\n", t.x, t.y, rotation);
-            if (rotation == 1) { // Landscape
-                // Do Nothing
+    static unsigned long tm = 0;
+    if (millis() - tm > 200 || LongPress) {
+        if (touch.touched()) {
+            auto t = touch.getPointScaled();
+            auto t2 = touch.getPointRaw();
+            Serial.printf("\nRAW: Touch Pressed on x=%d, y=%d, rot: %d", t2.x, t2.y, rotation);
+            Serial.printf("\nBEF: Touch Pressed on x=%d, y=%d, rot: %d", t.x, t.y, rotation);
+            if (rotation == 3) {
+                t.y = (tftHeight + 20) - t.y;
+                t.x = tftWidth - t.x;
             }
-            if (rotation == 3) { // Landscape
-                t.y = h - t.y;   // invert y
-                t.x = w - t.x;   // invert x
-            }
-            if (rotation == 0) { // Portrait
-                int tmp = t.x;   // swap x y
-                t.x = w - t.y;   // invert x
+            if (rotation == 0) {
+                int tmp = t.x;
+                t.x = tftWidth - t.y;
                 t.y = tmp;
             }
-            if (rotation == 2) { // Portrait
-                int tmp = t.x;   // swap x y
+            if (rotation == 2) {
+                int tmp = t.x;
                 t.x = t.y;
-                t.y = h - tmp; // invert y
+                t.y = (tftHeight + 20) - tmp;
             }
-            Serial.printf("Touch Pressed on x=%d, y=%d, rot=%d\n", t.x, t.y, rotation);
+            Serial.printf("\nAFT: Touch Pressed on x=%d, y=%d, rot: %d\n", t.x, t.y, rotation);
+            tm = millis();
             if (!wakeUpScreen()) AnyKeyPress = true;
             else return;
 
@@ -169,20 +99,6 @@ void InputHandler(void) {
             touchPoint.y = t.y;
             touchPoint.pressed = true;
             touchHeatMap(touchPoint);
-        }
+        } else touchPoint.pressed = false;
     }
 }
-
-/*********************************************************************
-** Function: powerOff
-** location: mykeyboard.cpp
-** Turns off the device (or try to)
-**********************************************************************/
-// void powerOff() {}
-
-/*********************************************************************
-** Function: checkReboot
-** location: mykeyboard.cpp
-** Btn logic to tornoff the device (name is odd btw)
-**********************************************************************/
-void checkReboot() {}

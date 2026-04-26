@@ -73,12 +73,13 @@ void _setBrightness(uint8_t brightval) {
 ** Handles the variables PrevPress, NextPress, SelPress, AnyKeyPress and EscPress
 **********************************************************************/
 void InputHandler(void) {
-    static unsigned long tm = millis();
-    if (millis() - tm > 200 || LongPress) { // don´t allow multiple readings in less than 200ms
+    static unsigned long tm = 0;
+    if (millis() - tm > 200 || LongPress) {
         if (touch.touched()) {
             auto t = touch.getPointScaled();
-            t = touch.getPointScaled();
-            tm = millis();
+            auto t2 = touch.getPointRaw();
+            Serial.printf("\nRAW: Touch Pressed on x=%d, y=%d, rot: %d", t2.x, t2.y, rotation);
+            Serial.printf("\nBEF: Touch Pressed on x=%d, y=%d, rot: %d", t.x, t.y, rotation);
             if (rotation == 3) {
                 t.y = (tftHeight + 20) - t.y;
                 t.x = tftWidth - t.x;
@@ -93,8 +94,8 @@ void InputHandler(void) {
                 t.x = t.y;
                 t.y = (tftHeight + 20) - tmp;
             }
-            // Serial.printf("Touched at x=%d, y=%d, rot=%d\n", t.x, t.y, rotation);
-
+            Serial.printf("\nAFT: Touch Pressed on x=%d, y=%d, rot: %d\n", t.x, t.y, rotation);
+            tm = millis();
             if (!wakeUpScreen()) AnyKeyPress = true;
             else return;
 
@@ -151,10 +152,3 @@ void powerOff() {
     displayRedStripe("Not Available");
     delay(2000);
 }
-
-/*********************************************************************
-** Function: checkReboot
-** location: mykeyboard.cpp
-** Btn logic to tornoff the device (name is odd btw)
-**********************************************************************/
-void checkReboot() {}

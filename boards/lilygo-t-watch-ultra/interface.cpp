@@ -167,10 +167,3 @@ void powerOff() {
     vTaskDelay(pdMS_TO_TICKS(200));
     esp_deep_sleep_start();
 }
-
-/*********************************************************************
-** Function: checkReboot
-** location: mykeyboard.cpp
-** Btn logic to tornoff the device (name is odd btw)
-**********************************************************************/
-void checkReboot() {}

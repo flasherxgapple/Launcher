@@ -64,32 +64,27 @@ void _setBrightness(uint8_t brightval) {
 void InputHandler(void) {
     static unsigned long tm = 0;
     if (millis() - tm > 200 || LongPress) {
-        // I know R3CK.. I Should NOT nest if statements..
-        // but it is needed to not keep SPI bus used without need, it save resources
         if (touch.touched()) {
             auto t = touch.getPointScaled();
-            Serial.printf("\nRAW: Touch Pressed on x=%d, y=%d, rot=%d", t.x, t.y, rotation);
-            tm = millis();
+            auto t2 = touch.getPointRaw();
+            Serial.printf("\nRAW: Touch Pressed on x=%d, y=%d, rot: %d", t2.x, t2.y, rotation);
+            Serial.printf("\nBEF: Touch Pressed on x=%d, y=%d, rot: %d", t.x, t.y, rotation);
             if (rotation == 3) {
-                // t.y = t.y;
-                t.x = tftWidth - t.x;
-            }
-            if (rotation == 1) {
                 t.y = (tftHeight + 20) - t.y;
-                // t.x = t.x;
+                t.x = tftWidth - t.x;
             }
             if (rotation == 0) {
                 int tmp = t.x;
-                t.x = t.y;
+                t.x = tftWidth - t.y;
                 t.y = tmp;
             }
             if (rotation == 2) {
                 int tmp = t.x;
-                t.x = tftWidth - t.y;
+                t.x = t.y;
                 t.y = (tftHeight + 20) - tmp;
             }
-            Serial.printf("\nROT: Touch Pressed on x=%d, y=%d\n", t.x, t.y);
-
+            Serial.printf("\nAFT: Touch Pressed on x=%d, y=%d, rot: %d\n", t.x, t.y, rotation);
+            tm = millis();
             if (!wakeUpScreen()) AnyKeyPress = true;
             else return;
 
@@ -98,20 +93,6 @@ void InputHandler(void) {
             touchPoint.y = t.y;
             touchPoint.pressed = true;
             touchHeatMap(touchPoint);
-        }
+        } else touchPoint.pressed = false;
     }
 }
-
-/*********************************************************************
-** Function: powerOff
-** location: mykeyboard.cpp
-** Turns off the device (or try to)
-**********************************************************************/
-// void powerOff() {}
-
-/*********************************************************************
-** Function: checkReboot
-** location: mykeyboard.cpp
-** Btn logic to tornoff the device (name is odd btw)
-**********************************************************************/
-void checkReboot() {}

@@ -328,6 +328,9 @@ void setup() {
     // Init post setup GPIO before SD Card initializes
     _post_setup_gpio();
 
+#if defined(HAS_RESISTIVE_TOUCH)
+    if (!loadTouchCalibration()) calibrateTouch();
+#endif
     // Gets the config.conf from SD Card and fill out the settings JSON
     getConfigs();
 #if defined(HAS_TOUCH)
@@ -355,7 +358,19 @@ void setup() {
             Serial.println("Press the button to enter the Launcher!");
             j++;
         }
-
+#if defined(HAS_TOUCH)
+        // Enable touch the center of the screen to get into Launcher
+        if (touchPoint.pressed) {
+            TouchPoint *t = &touchPoint;
+            int third_x = tftWidth / 3;
+            int third_y = tftHeight / 3;
+            if (t->x > third_x * 1 && t->x < third_x * 2 && ((t->y > third_y && t->y < third_y * 2))) {
+                tft->fillScreen(BGCOLOR);
+                touchPoint.pressed = false;
+                goto Launcher;
+            }
+        }
+#endif
         // Direct input check for startup - bypass check() function to avoid task suspension
         if (check(SelPress)) {
             tft->fillScreen(BGCOLOR);
@@ -558,6 +573,17 @@ void loop() {
             break;
         }
         checkReboot();
+#if defined(HAS_RESISTIVE_TOUCH)
+        if (Serial.available() > 0) {
+            String msg = Serial.readStringUntil('\n');
+            msg.trim();
+
+            if (msg == "calibrate") {
+                Serial.println("Starting calibration..");
+                calibrateTouch();
+            }
+        }
+#endif
     }
 }
 

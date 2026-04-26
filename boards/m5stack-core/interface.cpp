@@ -67,10 +67,3 @@ END:
 ** Turns off the device (or try to)
 **********************************************************************/
 void powerOff() { M5.Power.powerOff(); }
-
-/*********************************************************************
-** Function: checkReboot
-** location: mykeyboard.cpp
-** Btn logic to tornoff the device (name is odd btw)
-**********************************************************************/
-void checkReboot() {}
