@@ -196,8 +196,10 @@ void InputHandler(void) {
 #endif
         if (touched) {
             auto t = touch.getPointScaled();
+#if defined(HAS_RESISTIVE_TOUCH)
             auto t2 = touch.getPointRaw();
             Serial.printf("\nRAW: Touch Pressed on x=%d, y=%d, rot: %d", t2.x, t2.y, rotation);
+#endif
             Serial.printf("\nBEF: Touch Pressed on x=%d, y=%d, rot: %d", t.x, t.y, rotation);
             d_tmp = millis();
 #ifdef DONT_USE_INPUT_TASK // need to reset the variables to avoid ghost click
