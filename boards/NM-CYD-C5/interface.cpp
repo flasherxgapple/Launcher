@@ -79,16 +79,15 @@ void _setBrightness(uint8_t brightval) {
 ** Handles the variables PrevPress, NextPress, SelPress, AnyKeyPress and EscPress
 **********************************************************************/
 void InputHandler(void) {
-    static long d_tmp = millis();
-    if (millis() - d_tmp > 250 || LongPress) { // I know R3CK.. I Should NOT nest if statements..
+    static long tm = millis();
+    if (millis() - tm > 250 || LongPress) { // I know R3CK.. I Should NOT nest if statements..
         // but it is needed to not keep SPI bus used without need, it save resources
         TouchPoint t;
 #ifdef DONT_USE_INPUT_TASK
         checkPowerSaveTime();
 #endif
         if (touch.touched()) {
-            auto t = touch.getPointScaled();
-            d_tmp = millis();
+            tm = millis();
 #ifdef DONT_USE_INPUT_TASK // need to reset the variables to avoid ghost click
             NextPress = false;
             PrevPress = false;
@@ -99,6 +98,10 @@ void InputHandler(void) {
             AnyKeyPress = false;
             touchPoint.pressed = false;
 #endif
+            auto t = touch.getPointScaled();
+            auto t2 = touch.getPointRaw();
+            Serial.printf("\nRAW: Touch Pressed on x=%d, y=%d, rot: %d", t2.x, t2.y, rotation);
+            Serial.printf("\nBEF: Touch Pressed on x=%d, y=%d, rot: %d", t.x, t.y, rotation);
             if (rotation == 3) {
                 t.y = (tftHeight + 20) - t.y;
                 t.x = tftWidth - t.x;
@@ -113,9 +116,8 @@ void InputHandler(void) {
                 t.x = t.y;
                 t.y = (tftHeight + 20) - tmp;
             }
-            Serial.printf("\nTouch Pressed on x=%d, y=%d, rot=%d\n", t.x, t.y, rotation);
-            log_i("\nTouch Pressed on x=%d, y=%d, rot=%d\n", t.x, t.y, rotation);
-
+            Serial.printf("\nAFT: Touch Pressed on x=%d, y=%d, rot: %d\n", t.x, t.y, rotation);
+            tm = millis();
             if (!wakeUpScreen()) AnyKeyPress = true;
             else return;
 

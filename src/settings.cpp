@@ -1286,8 +1286,8 @@ void calibrateTouch() {
     // that uses it. I´m not doint it now because I dont have all affected devices, jusk have a brief
     // knowladge of what is currently working
     const uint8_t rot_true = swapXY | (invertX << 1) | (invertY << 2); // must use this in the future (or not)
-    const uint8_t rot = !swapXY | (!invertX << 1) | (invertY << 2);    // remove ! in a near furute
-
+    // remove ! in a near future, and fix the invertedY and X positions
+    const uint8_t rot = !swapXY | (invertY << 1) | (!invertX << 2);
     uint16_t xMin = !swapXY ? p[0].y : p[0].x; // remove ! in a near furute
     uint16_t xMax = xMin;
     uint16_t yMin = !swapXY ? p[0].x : p[0].y; // remove ! in a near furute
