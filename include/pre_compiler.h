@@ -89,5 +89,10 @@
 #ifndef OTA_TAG
     #define OTA_TAG "third party"
 #endif
+
+#ifndef ROUND_EDGE_SIZE
+    #define ROUND_EDGE_SIZE 0
+#endif
+#define RES ROUND_EDGE_SIZE
 #endif // _PRE_COMPILER
 // clang-format on

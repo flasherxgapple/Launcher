@@ -4,8 +4,8 @@
 #include "settings.h"
 #include <globals.h>
 
-int max_FM_size = tftWidth / (LW * FM) - 1;
-int max_FP_size = tftWidth / (LW)-2;
+int max_FM_size = (tftWidth - RES) / (LW * FM) - 1;
+int max_FP_size = (tftWidth - RES) / (LW)-2;
 
 // QWERTY KEYSET
 const int qwerty_keyboard_width = 12;
@@ -279,11 +279,11 @@ String generalKeyboard(
     // 12 px = 10 px + 2 of padding between the letters -> refer to the section above to better understand
     // ((12px * n_letters) - 2px ) + 9*2px = width
     const int btns_layout[5][3] = {
-        {1 * PAD + 0 * LW * FM,  3 * LW * FM, 1 * PAD + 0 * LW * FM + LW * FM / 2 }, // OK
-        {2 * PAD + 3 * LW * FM,  3 * LW * FM, 2 * PAD + 3 * LW * FM + LW * FM / 2 }, // ab (Caps)
-        {3 * PAD + 6 * LW * FM,  3 * LW * FM, 3 * PAD + 6 * LW * FM + LW * FM / 2 }, // <- (DEL)
-        {4 * PAD + 9 * LW * FM,  4 * LW * FM, 4 * PAD + 9 * LW * FM + LW * FM / 2 }, // [_] (SPACE)
-        {5 * PAD + 13 * LW * FM, 4 * LW * FM, 5 * PAD + 13 * LW * FM + LW * FM / 2}, // Esc
+        {1 * PAD + 0 * LW * FM + RES,  3 * LW * FM, 1 * PAD + 0 * LW * FM + LW * FM / 2 + RES }, // OK
+        {2 * PAD + 3 * LW * FM + RES,  3 * LW * FM, 2 * PAD + 3 * LW * FM + LW * FM / 2 + RES }, // ab (Caps)
+        {3 * PAD + 6 * LW * FM + RES,  3 * LW * FM, 3 * PAD + 6 * LW * FM + LW * FM / 2 + RES }, // <- (DEL)
+        {4 * PAD + 9 * LW * FM + RES,  4 * LW * FM, 4 * PAD + 9 * LW * FM + LW * FM / 2 + RES }, // [_] (SPACE)
+        {5 * PAD + 13 * LW * FM + RES, 4 * LW * FM, 5 * PAD + 13 * LW * FM + LW * FM / 2 + RES}, // Esc
     };
 
     const int key_width = tftWidth / KeyboardWidth;
@@ -409,41 +409,45 @@ String generalKeyboard(
             tft->setTextSize(FP);
             String chars_counter = String(current_text.length()) + "/" + String(max_size);
             tft->fillRect(
-                tftWidth - ((chars_counter.length() * LW * FP) + 20), // 6px per char + 1 padding
+                tftWidth - ((chars_counter.length() * LW * FP) + 20) - RES / 2, // 6px per char + 1 padding
                 KBLH + 4,
                 (chars_counter.length() * LW * FP) + 20,
                 7,
                 BGCOLOR
             ); // clear previous text
-            tft->drawString(chars_counter, tftWidth - ((chars_counter.length() * LW * FP) + 10), KBLH + 4);
+            tft->drawString(
+                chars_counter, tftWidth - ((chars_counter.length() * LW * FP) + 10) - RES / 2, KBLH + 4
+            );
 
             tft->drawString(
-                textbox_title.substring(0, max_FP_size - chars_counter.length() - 1), 3, KBLH + 4
+                textbox_title.substring(0, max_FP_size - chars_counter.length() - 1), 3 + RES / 2, KBLH + 4
             );
             // Drawing the textbox and the currently typed string
             tft->setTextSize(FM);
             // reset the text box if needed
             if (current_text.length() == (max_FM_size) || current_text.length() == (max_FM_size + 1) ||
                 current_text.length() == (max_FP_size) || current_text.length() == (max_FP_size + 1))
-                tft->fillRect(3, KBLH + LH * FP + 4, tftWidth - 3, KBLH, BGCOLOR);
+                tft->fillRect(3 + RES / 2, KBLH + LH * FP + 4, tftWidth - 3 - RES, KBLH, BGCOLOR);
             // typed string border
-            tft->drawRect(3, KBLH + LH * FP + 4, tftWidth - 3, KBLH, FGCOLOR);
+            tft->drawRect(3 + RES / 2, KBLH + LH * FP + 4, tftWidth - 3 - RES, KBLH, FGCOLOR);
             // write the text
             if (current_text.length() >
                 max_FM_size) { // if the text is too long, we try to set the smaller font
                 tft->setTextSize(FP);
                 if (current_text.length() >
                     max_FP_size) { // if its still too long, we divide it into two lines
-                    tft->drawString(current_text.substring(0, max_FP_size), 5, KBLH + LH * FP + 6);
+                    tft->drawString(current_text.substring(0, max_FP_size), 5 + RES / 2, KBLH + LH * FP + 6);
                     tft->drawString(
-                        current_text.substring(max_FP_size, current_text.length()), 5, KBLH + 2 * LH * FP + 6
+                        current_text.substring(max_FP_size, current_text.length()),
+                        5 + RES / 2,
+                        KBLH + 2 * LH * FP + 6
                     );
                 } else {
-                    tft->drawString(current_text, 5, KBLH + LH * FP + 6);
+                    tft->drawString(current_text, 5 + RES / 2, KBLH + LH * FP + 6);
                 }
             } else {
                 // else if it fits, just draw the text
-                tft->drawString(current_text, 5, KBLH + LH * FP + 6);
+                tft->drawString(current_text, 5 + RES / 2, KBLH + LH * FP + 6);
             }
 
             tft->setTextSize(FM);
@@ -506,14 +510,14 @@ String generalKeyboard(
             tft->setTextSize(FP);
             if (current_text.length() > (max_FP_size)) {
                 cursor_y = KBLH + 2 * LH * FP + 6;
-                cursor_x = 5 + (current_text.length() - max_FP_size) * LW * FP;
+                cursor_x = 5 + RES / 2 + (current_text.length() - max_FP_size) * LW * FP;
             } else {
                 cursor_y = KBLH + LH * FP + 6;
-                cursor_x = 5 + current_text.length() * LW * FP;
+                cursor_x = 5 + RES / 2 + current_text.length() * LW * FP;
             }
         } else {
             cursor_y = KBLH + LH * FP + 6;
-            cursor_x = 5 + current_text.length() * LW * FM;
+            cursor_x = 5 + RES / 2 + current_text.length() * LW * FM;
         }
 
         if (millis() - last_input_time > 250) { // INPUT DEBOUCING

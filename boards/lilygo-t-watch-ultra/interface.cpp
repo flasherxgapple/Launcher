@@ -1,9 +1,6 @@
 #include "powerSave.h"
-#define ARDUINO_T_WATCH_S3_ULTRA
-// #include <LilyGoLib.h>
-#include <interface.h>
-
 #include <Wire.h>
+#include <interface.h>
 
 // GPIO expander
 #include <ExtensionIOXL9555.hpp>
@@ -29,6 +26,22 @@ void _setup_gpio() {
         digitalWrite(pin, HIGH);
     }
     Wire.begin(SDA, SCL);
+    bool pmu_ret = false;
+    pmu_ret = PPM.init(Wire, SDA, SCL, AXP2101_SLAVE_ADDRESS);
+    if (pmu_ret) {
+        PPM.setSysPowerDownVoltage(3300);
+        PPM.setChargeTargetVoltage(4208);
+        PPM.setChargerConstantCurr(832);
+        PPM.getChargerConstantCurr();
+        PPM.setALDO1Voltage(3300); // SD Card
+        PPM.enableALDO1();
+        PPM.setALDO2Voltage(3300); // Display
+        PPM.enableALDO2();
+        PPM.setALDO4Voltage(3300); // Sensor
+        PPM.enableALDO4();
+
+        Serial.printf("getChargerConstantCurr: %d mA\n", PPM.getChargerConstantCurr());
+    }
     if (io.begin(Wire, 0x20)) {
         const uint8_t expands[] = {
             EXPANDS_DISP_EN,
@@ -43,15 +56,6 @@ void _setup_gpio() {
         }
     } else {
         Serial.println("Initializing expander failed");
-    }
-    bool pmu_ret = false;
-    pmu_ret = PPM.init(Wire, SDA, SCL, AXP2101_SLAVE_ADDRESS);
-    if (pmu_ret) {
-        PPM.setSysPowerDownVoltage(3300);
-        PPM.setChargeTargetVoltage(4208);
-        PPM.setChargerConstantCurr(832);
-        PPM.getChargerConstantCurr();
-        Serial.printf("getChargerConstantCurr: %d mA\n", PPM.getChargerConstantCurr());
     }
     io.digitalWrite(EXPANDS_TOUCH_RST, LOW);
     delay(20);
@@ -73,16 +77,6 @@ void _setup_gpio() {
 }
 
 /***************************************************************************************
-** Function name: _post_setup_gpio()
-** Location: main.cpp
-** Description:   second stage gpio setup to make a few functions work
-***************************************************************************************/
-void _post_setup_gpio() {
-    // brightness
-    // instance.setBrightness(DEVICE_MAX_BRIGHTNESS_LEVEL);
-}
-
-/***************************************************************************************
 ** Function name: getBattery()
 ** location: display.cpp
 ** Description:   Delivers the battery value from 1-100
@@ -98,10 +92,7 @@ int getBattery() {
 ** location: settings.cpp
 ** set brightness value
 **********************************************************************/
-void _setBrightness(uint8_t brightval) {
-    // brightness
-    // instance.setBrightness(brightval * 254 / 100);
-}
+void _setBrightness(uint8_t brightval) { tft->_outputDriver.setBrightness(brightval * 254 / 100); }
 
 struct TouchPointPro {
     int16_t x[5];

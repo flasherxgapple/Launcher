@@ -647,7 +647,7 @@ public:
 #endif
     };
 
-private:
+// private:
 #ifdef USE_CANVAS
     _TFT_DRV _outputDriver;
 #endif

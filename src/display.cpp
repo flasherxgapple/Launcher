@@ -98,6 +98,7 @@ void displayScrollingText(const String &text, Opt_Coord &coord) {
         _lastmillis = millis();
         i++;
         if (i == 1) _lastmillis = millis() + 1000;
+        tft->display(false);
     }
 }
 
@@ -129,12 +130,12 @@ void setTftDisplay(int x, int y, uint16_t fc, int size, uint16_t bg) {
 ** Description:   Draw touch screen footer
 ***************************************************************************************/
 void TouchFooter(uint16_t color) {
-    tft->drawRoundRect(5, tftHeight + 2, tftWidth - 10, (FM * LH + 4), 5, color);
+    tft->drawRoundRect(5 + RES, tftHeight + 2, tftWidth - 10 - 2 * RES, (FM * LH + 4), 5, color);
     tft->setTextColor(color);
     tft->setTextSize(FM);
-    tft->drawCentreString("PREV", tftWidth / 6, tftHeight + 4, 1);
+    tft->drawString("<<<", 11 + RES, tftHeight + 4);
     tft->drawCentreString("SEL", tftWidth / 2, tftHeight + 4, 1);
-    tft->drawCentreString("NEXT", 5 * tftWidth / 6, tftHeight + 4, 1);
+    tft->drawRightString(">>>", tftWidth - (RES + 11), tftHeight + 4, 1);
 }
 
 /***************************************************************************************
@@ -142,12 +143,12 @@ void TouchFooter(uint16_t color) {
 ** Description:   Draw touch screen footer
 ***************************************************************************************/
 void TouchFooter2(uint16_t color) {
-    tft->drawRoundRect(5, tftHeight + 2, tftWidth - 10, (FM * LH + 4), 5, color);
+    tft->drawRoundRect(5 + RES, tftHeight + 2, tftWidth - 10 - 2 * RES, (FM * LH + 4), 5, color);
     tft->setTextColor(color);
     tft->setTextSize(FM);
-    tft->drawCentreString("Skip", tftWidth / 6, tftHeight + 4, 1);
+    tft->drawString("<<", 11 + RES, tftHeight + 4);
     tft->drawCentreString("LAUNCHER", tftWidth / 2, tftHeight + 4, 1);
-    tft->drawCentreString("Skip", 5 * tftWidth / 6, tftHeight + 4, 1);
+    tft->drawRightString(">>", tftWidth - (RES + 11), tftHeight + 4, 1);
 }
 
 /***************************************************************************************
@@ -610,12 +611,15 @@ Opt_Coord drawOptions(
         int cursorX = rowLeft;
 #ifdef HAS_TOUCH
         bool showEscLabel = (!border && start == 0 && optionIndex == 0);
+        if (RES && !border) {
+            if (i < (RES / (LH * FM) + 1)) cursorX += RES - i * LW * FM;
+        }
         if (showEscLabel) {
             tft->setCursor(cursorX, rowTop);
             tft->setTextColor(alcolor, bgcolor);
             tft->print("[ESC]");
-            prefixWidth += 5 * charWidth;
-            cursorX += 5 * charWidth;
+            prefixWidth += (5 * charWidth + RES);
+            cursorX += (5 * charWidth);
         }
 #endif
 
@@ -634,6 +638,10 @@ Opt_Coord drawOptions(
 
         int labelX = cursorX;
         int labelWidth = lineWidth - prefixWidth;
+        if (RES && !border) {
+            if (i < (RES / (LH * FM) + 1)) { labelWidth -= RES / (i + 1); }
+            if (i >= (optionCount - (RES / (LH * FM) + 1))) { labelWidth -= RES / (optionCount - i); }
+        }
         if (labelWidth < 0) labelWidth = 0;
         int labelCharLimit = labelWidth / charWidth;
         if (labelCharLimit < 1) labelCharLimit = 1;
@@ -747,9 +755,9 @@ void drawMainMenu(std::vector<MenuOptions> &opt, int index) {
     tft->drawCentreString(opt[index].text, tftWidth / 2, tftHeight - (6 + LH * FP), 1);
     // Draw Launcher version and battery value
 #if TFT_HEIGHT < 200
-    tft->drawString("Launcher", 12, 12);
+    tft->drawString("Launcher", 12 + RES, 12);
 #else
-    tft->drawString("Launcher " + String(LAUNCHER), 12, 12);
+    tft->drawString("Launcher " + String(LAUNCHER), 12 + RES, 12);
 #endif
     tft->setTextSize(f_size);
     drawDeviceBorder();
@@ -763,16 +771,16 @@ void drawDeviceBorder() {
 }
 
 void drawBatteryStatus(uint8_t bat) {
-    tft->drawRoundRect(tftWidth - 42, 7, 34, FP * LH + 9, 2, FGCOLOR);
+    tft->drawRoundRect(tftWidth - 42 - RES, 7, 34, FP * LH + 9, 2, FGCOLOR);
     tft->setTextSize(FP);
     tft->setTextColor(FGCOLOR, BGCOLOR);
 #if TFT_HEIGHT > 140 // Excludes Marauder Mini
-    tft->drawRightString("  " + String(bat) + "%", tftWidth - 45, 12, 1);
+    tft->drawRightString("  " + String(bat) + "%", tftWidth - 45 - RES, 12, 1);
 #endif
-    tft->fillRoundRect(tftWidth - 40, 9, 30, FP * LH + 5, 2, BGCOLOR);
-    tft->fillRoundRect(tftWidth - 40, 9, 30 * bat / 100, FP * LH + 5, 2, FGCOLOR);
-    tft->drawLine(tftWidth - 30, 9, tftWidth - 30, 9 + FP * LH + 6, BGCOLOR);
-    tft->drawLine(tftWidth - 20, 9, tftWidth - 20, 9 + FP * LH + 6, BGCOLOR);
+    tft->fillRoundRect(tftWidth - 40 - RES, 9, 30, FP * LH + 5, 2, BGCOLOR);
+    tft->fillRoundRect(tftWidth - 40 - RES, 9, 30 * bat / 100, FP * LH + 5, 2, FGCOLOR);
+    tft->drawLine(tftWidth - 30 - RES, 9, tftWidth - 30 - RES, 9 + FP * LH + 6, BGCOLOR);
+    tft->drawLine(tftWidth - 20 - RES, 9, tftWidth - 20 - RES, 9 + FP * LH + 6, BGCOLOR);
 }
 
 /*********************************************************************
