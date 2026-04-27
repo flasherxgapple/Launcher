@@ -718,8 +718,12 @@ String generalKeyboard(
                     if (current_text.length() == max_FM_size) redraw = true;
                     if (current_text.length() == max_FP_size) redraw = true;
                 }
-                if (KeyStroke.enter) { break; }
-                KeyStroke.Clear();
+
+                if (KeyStroke.enter) {
+                    resetGlobals();
+                    break;
+                }
+                resetGlobals();
                 int _of = tft->getTextsize();
                 tft->setTextSize(FP);
                 String chars_counter = String(current_text.length()) + "/" + String(max_size);

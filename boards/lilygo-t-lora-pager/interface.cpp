@@ -238,12 +238,16 @@ void InputHandler(void) {
         if (pressed && !wakeUpScreen() && keyVal != '\0') {
             KeyStroke.Clear();
             KeyStroke.hid_keys.push_back(keyVal);
-            if (keyValue == KEY_BACKSPACE) {
+            if (keyVal == KEY_BACKSPACE) {
                 KeyStroke.del = true;
                 KeyStroke.exit_key = true;
             }
-            if (keyValue == KEY_ENTER) KeyStroke.enter = true;
+            if (keyVal == KEY_ENTER) KeyStroke.enter = true;
             if (digitalRead(SEL_BTN) == BTN_ACT) KeyStroke.fn = true;
+            if (keyVal == 'w') UpPress = true;
+            if (keyVal == 's') DownPress = true;
+            if (keyVal == 'a') PrevPress = true;
+            if (keyVal == 'd') NextPress = true;
             KeyStroke.word.push_back(keyVal);
             KeyStroke.pressed = true;
         }
@@ -262,7 +266,7 @@ void InputHandler(void) {
                 posDifference--;
             }
             if (sel == BTN_ACT || KeyStroke.enter) SelPress = true;
-            if (esc == BTN_ACT) EscPress = true;
+            if (esc == BTN_ACT || KeyStroke.del) EscPress = true;
         } else goto END;
     }
 

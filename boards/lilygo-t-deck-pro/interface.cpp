@@ -391,6 +391,10 @@ void InputHandler(void) {
                 KeyStroke.fn = true;
             } else {
                 KeyStroke.word.push_back(keyVal);
+                if (keyVal == 'w') UpPress = true;
+                if (keyVal == 's') DownPress = true;
+                if (keyVal == 'a') PrevPress = true;
+                if (keyVal == 'd') NextPress = true;
                 KeyStroke.pressed = true;
             }
         }

@@ -94,7 +94,9 @@ Things that needs to be done in next updates
      * [x] Fix issue where brightness wasnt being saved
      * [x] Fix issue where custom "downloads" folder wasn't being used
      * [x] Fix issue where some fimware downloads waren't working due to prohibited characters on firmware name
-     * [x] Added Touch Calibration for XPT2046 driven devices (Resistive touchscreens, like: CYD, Marauder, Phantom, T-HMI), It will be prompted when no calibration data is found (First boot), or can be started on `CFG>Calibrate Touch`, or by sending "calibrate" over Serial.
+     * [x] Fixed SD Card not mounting on T-Watch Ultra and adjusted UI for Rounded edges on Main menu and file listings
+     * [x] Enabled AWSD navigation for Lyligo T-LoraPager, T-Deck, T-Deck Plus and T-Deck Pro
+     * [x] Added Touch Calibration for XPT2046 driven devices (Resistive touchscreens, like: CYD, Marauder, Phantom, T-HMI), It will be prompted when no calibration data is found (First boot), or can be started on `CFG > Calibrate Touch`, or by sending "calibrate" over Serial.
      * [x] Adds "OFF" Option to main screen to turn off (DeepSleep when PMIC is not available) the device.
 
 * 2.6.8:
