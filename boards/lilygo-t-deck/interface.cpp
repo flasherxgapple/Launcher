@@ -196,6 +196,12 @@ void InputHandler(void) {
             KeyStroke.exit_key = true;
             KeyStroke.del = true;
         }
+
+        if (keyValue == 'w') UpPress = true;
+        if (keyValue == 's') DownPress = true;
+        if (keyValue == 'a') PrevPress = true;
+        if (keyValue == 'd') NextPress = true;
+
         if (keyValue == (char)0x0D) KeyStroke.enter = true;
         if (digitalRead(SEL_BTN) == BTN_ACT) KeyStroke.fn = true;
         KeyStroke.word.push_back(keyValue);
