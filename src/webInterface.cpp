@@ -485,7 +485,14 @@ void configureWebServer() {
                     }
                 } else {
                     if (strcmp(fileAction, "download") == 0) {
-                        request->send(SDM, fileName, "application/octet-stream");
+                        File file = SDM.open(fileName);
+                        if (file) {
+                            AsyncWebServerResponse *response = request->beginResponse(file, String(fileName), "application/octet-stream", true);
+                            request->send(response);
+                            file.close();
+                        } else {
+                            request->send(404, "text/plain", "File not found");
+                        }
                     } else if (strcmp(fileAction, "delete") == 0) {
                         if (deleteFromSd(fileName)) {
                             request->send(200, "text/plain", "Deleted : " + String(fileName));
