@@ -44,6 +44,8 @@
 #include "lilygo-t-display-s3-touch.h"
 #elif T_DONGLE_S3
 #include "lilygo-t-dongle-s3-tft.h"
+#elif WAVESHARE_ESP32_S3_LCD_147
+#include "waveshare-esp32-s3-lcd-147.h"
 #elif T_DISPLAY_S3_PRO
 #include "lilygo-t-display-s3-pro.h"
 #elif SMOOCHIEE_BOARD

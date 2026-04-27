@@ -286,8 +286,14 @@ void configureWebServer() {
 
     // configure web server
 
-    MDNS.begin(host);
+    if (MDNS.begin(host)) {
+        MDNS.addService("http", "tcp", config.webserverporthttp);
+    }
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+    server->on("/ping", HTTP_GET, [](AsyncWebServerRequest *request) {
+        Serial.println("WebUI /ping");
+        request->send(200, "text/plain", "launcher-pong");
+    });
     // if url isn't found
     server->onNotFound([](AsyncWebServerRequest *request) { request->redirect("/"); });
 
@@ -609,6 +615,7 @@ void startWebUi(String ssid, int encryptation, bool mode_ap) {
         // Choose wifi access mode
         wifiConnect(ssid, encryptation, mode_ap);
     }
+    vTaskDelay(pdMS_TO_TICKS(250));
 
     // configure web server
     // log_i("Configuring WebServer");
