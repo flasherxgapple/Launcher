@@ -214,7 +214,7 @@ void _setBrightness(uint8_t brightval) {
     }
 }
 
-struct TouchPointPro {
+struct LTouchPointPro {
     int16_t x = 0;
     int16_t y = 0;
 };
@@ -330,9 +330,9 @@ int handleSpecialKeys(uint8_t k, bool pressed) {
 **********************************************************************/
 void InputHandler(void) {
     static long _tmptmp;
-    TouchPointPro t;
+    LTouchPointPro t;
     uint8_t touched = 0;
-    touched = touch.getPoint(&t.x, &t.y);
+    touched = touch.getPoint(&t.x, &t.y, 1);
     if ((millis() - _tmptmp) > 150 || LongPress) { // one reading each 500ms
         if (digitalRead(0) == LOW) NextPress = true;
 

@@ -10,7 +10,7 @@
 
 #include <esp_adc_cal.h>
 TouchDrvCSTXXX touch;
-struct TouchPointPro {
+struct LTouchPointPro {
     int16_t x = 0;
     int16_t y = 0;
 };
@@ -178,9 +178,9 @@ void InputHandler(void) {
             slPress = false;
         }
         if (!readTouch) return; // dont have touchscreen
-        TouchPointPro t;
+        LTouchPointPro t;
         uint8_t touched = 0;
-        touched = touch.getPoint(&t.x, &t.y);
+        touched = touch.getPoint(&t.x, &t.y, 1);
 
         if (touched) {
             // Serial.printf(

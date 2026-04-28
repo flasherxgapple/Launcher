@@ -38,7 +38,7 @@ CYD28_TouchC touch(CYD28_DISPLAY_HOR_RES_MAX, CYD28_DISPLAY_VER_RES_MAX);
 #include <TouchLib.h>
 class CYD_Touch : public TouchLib {
 public:
-    TouchPoint t;
+    LTouchPoint t;
     TP_Point ti;
     CYD_Touch() : TouchLib(Wire, TOUCH_SDA_PIN, TOUCH_SCL_PIN, TOUCH_ADDR, TOUCH_RST_PIN) {}
     inline bool begin() {
@@ -47,7 +47,7 @@ public:
         return result;
     }
     inline bool touched() { return read(); }
-    inline TouchPoint getPointScaled() {
+    inline LTouchPoint getPointScaled() {
         ti = getPoint(0);
 #if TOUCH_INVERTED
         t.x = ti.y;
@@ -73,7 +73,7 @@ CYD_Touch touch;
 
 class CYD_Touch : public BBCapTouch {
 public:
-    TouchPoint t;
+    LTouchPoint t;
     TOUCHINFO ti;
     CYD_Touch() : BBCapTouch() {}
     inline bool begin() {
@@ -101,7 +101,7 @@ public:
         }
         return t.pressed;
     }
-    inline TouchPoint getPointScaled() { return t; }
+    inline LTouchPoint getPointScaled() { return t; }
 };
 CYD_Touch touch;
 
@@ -190,7 +190,7 @@ void InputHandler(void) {
     bool touched = touch.touched();            // read every cycle to skip bad readings
     if (millis() - d_tmp > 250 || LongPress) { // I know R3CK.. I Should NOT nest if statements..
         // but it is needed to not keep SPI bus used without need, it save resources
-        TouchPoint t;
+        LTouchPoint t;
 #ifdef DONT_USE_INPUT_TASK
         checkPowerSaveTime();
 #endif

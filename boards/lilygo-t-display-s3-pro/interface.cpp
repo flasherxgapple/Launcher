@@ -120,7 +120,7 @@ void _setBrightness(uint8_t brightval) {
     }
 }
 
-struct TouchPointPro {
+struct LTouchPointPro {
     int16_t x[5];
     int16_t y[5];
 };
@@ -130,9 +130,9 @@ struct TouchPointPro {
 **********************************************************************/
 void InputHandler(void) {
     static long tm = 0;
-    TouchPointPro t;
+    LTouchPointPro t;
     if (millis() - tm > 200 || LongPress) {
-        if (touch.getPoint(t.x, t.y) && touch.isPressed()) {
+        if (touch.getPoint(t.x, t.y, 1) && touch.isPressed()) {
             tm = millis();
             if (rotation == 1) { t.y[0] = TFT_WIDTH - t.y[0]; }
             if (rotation == 3) { t.x[0] = TFT_HEIGHT - t.x[0]; }

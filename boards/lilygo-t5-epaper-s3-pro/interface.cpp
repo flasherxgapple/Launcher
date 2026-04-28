@@ -193,7 +193,7 @@ void _setBrightness(uint8_t brightval) {
     }
 }
 
-struct TouchPointPro {
+struct LTouchPointPro {
     int16_t x = 0;
     int16_t y = 0;
 };
@@ -204,7 +204,7 @@ struct TouchPointPro {
 **********************************************************************/
 void InputHandler(void) {
     static unsigned long _tmptmp = 0;
-    TouchPointPro t;
+    LTouchPointPro t;
     uint8_t touched = 0;
     uint8_t rot = 5;
     if (rot != rotation) {
@@ -230,7 +230,7 @@ void InputHandler(void) {
         }
         rot = rotation;
     }
-    touched = touch.getPoint(&t.x, &t.y);
+    touched = touch.getPoint(&t.x, &t.y, 1);
     if ((millis() - _tmptmp) > 250 || LongPress) { // one reading each 500ms
 
         // Serial.printf("\nPressed x=%d , y=%d, rot: %d",t.x, t.y, rotation);

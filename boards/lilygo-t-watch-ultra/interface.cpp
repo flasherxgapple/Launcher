@@ -94,9 +94,9 @@ int getBattery() {
 **********************************************************************/
 void _setBrightness(uint8_t brightval) { tft->_outputDriver.setBrightness(brightval * 254 / 100); }
 
-struct TouchPointPro {
-    int16_t x[5];
-    int16_t y[5];
+struct LTouchPointPro {
+    int16_t x;
+    int16_t y;
 };
 /*********************************************************************
 ** Function: InputHandler
@@ -106,30 +106,30 @@ void InputHandler(void) {
     static long tm = 0;
     if (millis() - tm > 200 || LongPress) {
         if (touch.isPressed()) {
-            TouchPointPro t;
-            touch.getPoint(&t.x[0], &t.y[0], 1);
+            LTouchPointPro t;
+            touch.getPoint(&t.x, &t.y, 1);
             tm = millis();
-            if (rotation == 1) { t.y[0] = TFT_WIDTH - t.y[0]; }
-            if (rotation == 3) { t.x[0] = t.x[0]; }
+            if (rotation == 1) { t.y = TFT_WIDTH - t.y; }
+            if (rotation == 3) { t.x = t.x; }
             // Need to test these 2
             if (rotation == 0) {
-                int tmp = t.x[0];
-                t.x[0] = t.y[0];
-                t.y[0] = tmp;
+                int tmp = t.x;
+                t.x = t.y;
+                t.y = tmp;
             }
             if (rotation == 2) {
-                int tmp = t.x[0];
-                t.x[0] = TFT_WIDTH - t.y[0];
-                t.y[0] = TFT_HEIGHT - tmp;
+                int tmp = t.x;
+                t.x = TFT_WIDTH - t.y;
+                t.y = TFT_HEIGHT - tmp;
             }
 
-            Serial.printf("\nPressed x=%d , y=%d, rot: %d", t.x[0], t.y[0], rotation);
+            Serial.printf("\nPressed x=%d , y=%d, rot: %d", t.x, t.y, rotation);
 
             if (!wakeUpScreen()) AnyKeyPress = true;
             else return;
 
-            touchPoint.x = t.x[0];
-            touchPoint.y = t.y[0];
+            touchPoint.x = t.x;
+            touchPoint.y = t.y;
             touchPoint.pressed = true;
             touchHeatMap(touchPoint);
         }
