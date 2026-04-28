@@ -296,6 +296,7 @@ void setup() {
 
 #endif
     tft->setRotation(rotation);
+    tft->setTextColor(FGCOLOR, BGCOLOR);
     if (rotation & 0b1) {
 #if defined(HAS_TOUCH)
         tftHeight = TFT_WIDTH - (FM * LH + 4);
@@ -372,7 +373,11 @@ void setup() {
         }
 #endif
         // Direct input check for startup - bypass check() function to avoid task suspension
+#if defined(WAVESHARE_ESP32_S3_LCD_147)
+        if (check(SelPress) || check(NextPress) || check(EscPress) || check(AnyKeyPress)) {
+#else
         if (check(SelPress)) {
+#endif
             tft->fillScreen(BGCOLOR);
             goto Launcher;
         }
@@ -380,6 +385,8 @@ void setup() {
 #if defined(HAS_KEYBOARD)
         keyStroke key = _getKeyPress();
         if (key.pressed && !key.enter)
+#elif defined(WAVESHARE_ESP32_S3_LCD_147)
+        if (false)
 #elif defined(STICK_C_PLUS2) || defined(STICK_C_PLUS)
         if (NextPress)
 #else

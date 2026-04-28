@@ -227,6 +227,9 @@ String generalKeyboard(
     bool selection_made = false; // used for detecting if an key or a button was selected
     bool redraw = true;
     long last_input_time = millis(); // used for input debouncing
+    unsigned long pending_next_at = 0;
+    bool pending_next = false;
+    constexpr unsigned long kDoubleTapWindowMs = 275;
     // cursor coordinates: kep track of where the next character should be printed (in screen pixels)
     int cursor_x = 0;
     int cursor_y = 0;
@@ -585,7 +588,72 @@ String generalKeyboard(
             }
 #endif
 
-#if defined(HAS_3_BUTTONS) // StickCs and Core
+#if defined(WAVESHARE_ESP32_S3_LCD_147)
+            auto moveKeyboardCursorNext = [&]() {
+                if (y < 0) {
+                    x++;
+                    if (x >= buttons_number) {
+                        y = 0;
+                        x = 0;
+                    }
+                } else {
+                    x++;
+                    if (x >= KeyboardWidth) {
+                        x = 0;
+                        y++;
+                    }
+                    if (y >= KeyboardHeight) { y = -1; }
+                }
+                redraw = true;
+            };
+
+            auto moveKeyboardCursorPrev = [&]() {
+                if (y < 0) {
+                    x--;
+                    if (x < 0) {
+                        y = KeyboardHeight - 1;
+                        x = KeyboardWidth - 1;
+                    }
+                } else {
+                    x--;
+                    if (x < 0) {
+                        y--;
+                        if (y < 0) {
+                            y = -1;
+                            x = buttons_number - 1;
+                        } else {
+                            x = KeyboardWidth - 1;
+                        }
+                    }
+                }
+                redraw = true;
+            };
+
+            if (pending_next && millis() - pending_next_at > kDoubleTapWindowMs) {
+                pending_next = false;
+                moveKeyboardCursorNext();
+                last_input_time = millis();
+            }
+
+            if (check(EscPress)) {
+                pending_next = false;
+                current_text = KEY_ESCAPE;
+                break;
+            }
+            if (check(SelPress)) {
+                pending_next = false;
+                selection_made = true;
+            } else if (check(NextPress)) {
+                if (pending_next && millis() - pending_next_at <= kDoubleTapWindowMs) {
+                    pending_next = false;
+                    moveKeyboardCursorPrev();
+                    last_input_time = millis();
+                } else {
+                    pending_next = true;
+                    pending_next_at = millis();
+                }
+            }
+#elif defined(HAS_3_BUTTONS) // StickCs and Core
             if (check(SelPress)) {
                 selection_made = true;
             } else {

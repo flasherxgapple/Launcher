@@ -74,8 +74,15 @@ Exit:
 ** Description:   Start SD Card
 ***************************************************************************************/
 bool setupSdCard() {
-#if !defined(SDM_SD)                    // fot Lilygo T-Display S3 with lilygo shield
-    if (!SD_MMC.begin("/sdcard", true)) // One bit mode
+#if !defined(SDM_SD) // fot Lilygo T-Display S3 with lilygo shield
+#if defined(USE_SD_MMC) && defined(PIN_SD_CLK) && defined(PIN_SD_CMD) && defined(PIN_SD_D0)
+    SD_MMC.end();
+    vTaskDelay(pdTICKS_TO_MS(20));
+    SD_MMC.setPins(PIN_SD_CLK, PIN_SD_CMD, PIN_SD_D0);
+    vTaskDelay(pdTICKS_TO_MS(10));
+#else
+#endif
+    if (!SD_MMC.begin("/sdcard", true, false)) // One bit mode, don't auto-format
 #elif (TFT_MOSI == SDCARD_MOSI)
     if (!SDM.begin(_cs)) // https://github.com/Bodmer/TFT_eSPI/discussions/2420
 #elif defined(HEADLESS)

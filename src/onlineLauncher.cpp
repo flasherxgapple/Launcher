@@ -52,6 +52,8 @@ void wifiConnect(String ssid, int encryptation, bool isAP) {
             }
         }
 
+        WiFi.mode(WIFI_STA);
+        WiFi.setSleep(false);
         WiFi.begin(ssid.c_str(), pwd.c_str());
 
         resetTftDisplay(10, 10, FGCOLOR, FP);
@@ -79,9 +81,16 @@ void wifiConnect(String ssid, int encryptation, bool isAP) {
         }
     } else { // Running in Access point mode
         IPAddress AP_GATEWAY(172, 0, 0, 1);
+#if !CONFIG_ESP_HOSTED_ENABLED
+        WiFi.softAPdisconnect(true);
+        WiFi.disconnect(true, true);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+#endif
         WiFi.mode(WIFI_AP);
+        WiFi.setSleep(false);
         WiFi.softAPConfig(AP_GATEWAY, AP_GATEWAY, IPAddress(255, 255, 255, 0));
-        WiFi.softAP("Launcher", "", 6, 0, 1, false);
+        WiFi.softAP("Launcher", "", 6, 0, 4, false);
+        vTaskDelay(250 / portTICK_PERIOD_MS);
         Serial.print("IP: ");
         Serial.println(WiFi.softAPIP());
     }
