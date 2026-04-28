@@ -69,7 +69,7 @@ void _setup_gpio() {
         Serial.println("PMU is not online...");
     } else {
         PMU.disableOTG();
-        PMU.enableADCMeasure();
+        PMU.enableMeasure();
         PMU.enableCharge();
     }
 }

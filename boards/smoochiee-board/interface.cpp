@@ -42,7 +42,7 @@ void _setup_gpio() {
         PPM.setChargerConstantCurr(832);
         PPM.getChargerConstantCurr();
         Serial.printf("getChargerConstantCurr: %d mA\n", PPM.getChargerConstantCurr());
-        PPM.enableADCMeasure();
+        PPM.enableMeasure();
         PPM.enableCharge();
         PPM.enableOTG();
         PPM.disableOTG();

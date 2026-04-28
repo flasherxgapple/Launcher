@@ -8,6 +8,7 @@ TouchDrvGT911 touch;
 #include <bq27220.h>
 BQ27220 bq;
 
+XPOWERS_CHIP_BQ25896
 #include <XPowersLib.h>
 XPowersPPM PPM;
 
@@ -109,7 +110,7 @@ bool startPeripherals(uint8_t touchAddress, int8_t rst, int8_t irq) {
         // Get the set charging current
         PPM.getChargerConstantCurr();
         Serial.printf("getChargerConstantCurr: %d mA\n", PPM.getChargerConstantCurr());
-        PPM.enableADCMeasure();
+        PPM.enableMeasure();
         PPM.enableCharge();
         PPM.disableOTG();
     }

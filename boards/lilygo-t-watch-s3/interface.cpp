@@ -11,8 +11,8 @@ XPowersAXP2101 axp192;
 TouchDrvFT6X36 touch;
 
 // Haptic
-#include "SensorDRV2605.hpp"
-SensorDRV2605 drv;
+#include "HapticDrivers.hpp"
+HapticDriver_DRV2605 drv;
 
 /***************************************************************************************
 ** Function name: _setup_gpio()
@@ -95,8 +95,8 @@ void _setup_gpio() {
     } else {
         Serial.println("Init DRV2605 Sensor success!");
         drv.selectLibrary(1);
-        drv.setMode(SensorDRV2605::MODE_INTTRIG);
-        drv.useERM();
+        drv.setMode(HapticMode::INTERNAL_TRIGGER);
+        drv.setERMLRA(true);
 
         // Startup buzz
         drv.setWaveform(0, 70);
