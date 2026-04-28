@@ -109,7 +109,7 @@
             uses: actions/cache@v4
             with:
               path: |
-                ~/.platformio
+                .pio/core
               key: ${{ runner.os }}-platformio-${{ hashFiles('platformio.ini') }}
               restore-keys: |
                 ${{ runner.os }}-platformio-${{ hashFiles('platformio.ini') }}

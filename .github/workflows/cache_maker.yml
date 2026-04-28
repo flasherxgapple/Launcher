@@ -32,7 +32,7 @@
             uses: actions/cache@v4
             with:
               path: |
-                ~/.platformio
+                .pio/core
               key: ${{ runner.os }}-platformio-${{ hashFiles('platformio.ini') }}
               restore-keys: |
                 ${{ runner.os }}-platformio-${{ hashFiles('platformio.ini') }}
@@ -42,22 +42,10 @@
             run: |
               pip install requests esptool platformio
 
-          - name: Build for ESP32
+          - name: Fetch tools for Xtensa
             run: |
               platformio run -e headless-esp32-4mb
 
-          - name: Build for ESP32-S3
-            run: |
-              platformio run -e headless-esp32s3-4mb
-
-          - name: Build for ESP32-P4
-            run: |
-              platformio run -e m5stack-tab5
-
-          - name: Build for ESP32-C6
-            run: |
-              platformio run -e arduino-nesso-n1
-
-          - name: Build for ESP32-C5
+          - name: Fetch tools for RISCV
             run: |
               platformio run -e NM-CYD-C5
