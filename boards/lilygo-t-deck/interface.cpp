@@ -4,7 +4,7 @@
 #include <interface.h>
 TouchDrvGT911 touch;
 
-struct TouchPointPro {
+struct LTouchPointPro {
     int16_t x = 0;
     int16_t y = 0;
 };
@@ -123,7 +123,7 @@ void _setBrightness(uint8_t brightval) {
 void InputHandler(void) {
     char keyValue = 0;
     static unsigned long tm = millis();
-    TouchPointPro t;
+    LTouchPointPro t;
     uint8_t touched = 0;
     uint8_t rot = 5;
 #ifdef T_DECK_PLUS
@@ -154,7 +154,7 @@ void InputHandler(void) {
         }
         rot = rotation;
     }
-    touched = touch.getPoint(&t.x, &t.y);
+    touched = touch.getPoint(&t.x, &t.y, 1);
     delay(1);
     Wire.requestFrom(LILYGO_KB_SLAVE_ADDRESS, 1);
     while (Wire.available() > 0) {

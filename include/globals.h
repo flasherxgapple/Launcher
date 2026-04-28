@@ -91,7 +91,7 @@ struct keyStroke { // DO NOT CHANGE IT!!!!!
     }
 };
 
-struct TouchPoint {
+struct LTouchPoint {
     bool pressed = false;
     uint16_t x;
     uint16_t y;
@@ -104,7 +104,7 @@ struct TouchPoint {
     }
 };
 
-extern TouchPoint touchPoint;
+extern LTouchPoint touchPoint;
 extern keyStroke KeyStroke;
 // Navigation Variables
 extern long LongPressTmp;

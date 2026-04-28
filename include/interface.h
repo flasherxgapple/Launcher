@@ -64,7 +64,7 @@ void checkReboot();
 ** Location: utils.cpp
 ** Touchscreen Mapping, include this function after reading the touchPoint
 **********************************************************************/
-void touchHeatMap(struct TouchPoint t);
+void touchHeatMap(struct LTouchPoint t);
 
 #include <globals.h>
 #endif

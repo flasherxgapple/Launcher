@@ -89,8 +89,9 @@ Things that needs to be done in next updates
      * [ ] Custom partition builder (no more hardcoded partition lists)
 
 * 2.6.9:
-     * [X] Port to NM-CYD-C5
-     * [x] Port to 3248W535C
+     * [X] Port to [NM-CYD-C5](https://www.nmminer.com/product/nm-cyd-c5/)
+     * [x] Port to [3248W535C](https://www.displaysmodule.com/sale-51335661-jc3248w535c-i-y-lcd-display-module-with-320-480-pixel-resolution-and-effective-display-area-73-4-49-.html)
+     * [x] Port to [Waveshare-ESP32-S3-LCD-1.47](https://www.waveshare.com/wiki/ESP32-S3-LCD-1.47)
      * [x] Fix issue where brightness wasnt being saved
      * [x] Fix issue where custom "downloads" folder wasn't being used
      * [x] Fix issue where some fimware downloads waren't working due to prohibited characters on firmware name
@@ -98,6 +99,8 @@ Things that needs to be done in next updates
      * [x] Enabled AWSD navigation for Lyligo T-LoraPager, T-Deck, T-Deck Plus and T-Deck Pro
      * [x] Added Touch Calibration for XPT2046 driven devices (Resistive touchscreens, like: CYD, Marauder, Phantom, T-HMI), It will be prompted when no calibration data is found (First boot), or can be started on `CFG > Calibrate Touch`, or by sending "calibrate" over Serial.
      * [x] Adds "OFF" Option to main screen to turn off (DeepSleep when PMIC is not available) the device.
+     * [x] Centralized Main libraries, using git submodules, so it doesn't download many copies of the same library to the `.pio/libdeps/**/` folder
+     * [x] Speed up workflow, using Github cache for framwork and libs
 
 * 2.6.8:
      * [x] Increased Gamestation Partitions sizes. https://github.com/bmorcelli/Launcher/issues/299

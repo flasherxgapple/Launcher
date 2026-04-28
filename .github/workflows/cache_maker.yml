@@ -1,0 +1,63 @@
+---
+  name: Cache Maker
+
+  on:
+    workflow_dispatch:
+
+  jobs:
+    compile_sketch:
+      name: Cache maker
+      runs-on: ubuntu-latest
+      steps:
+          - uses: actions/checkout@v4
+            with:
+              submodules: true
+
+          - id: build
+            name: setup Python
+            uses: actions/setup-python@v2
+            with:
+              python-version: "3.13"
+
+          - name: Cache pip
+            uses: actions/cache@v4
+            with:
+              path: ~/.cache/pip
+              key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+              restore-keys: |
+                ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+                ${{ runner.os }}-pip-
+
+          - name: Cache PlatformIO Framework
+            uses: actions/cache@v4
+            with:
+              path: |
+                ~/.platformio
+              key: ${{ runner.os }}-platformio-${{ hashFiles('platformio.ini') }}
+              restore-keys: |
+                ${{ runner.os }}-platformio-${{ hashFiles('platformio.ini') }}
+                ${{ runner.os }}-platformio-
+
+          - name: Install dependencies
+            run: |
+              pip install requests esptool platformio
+
+          - name: Build for ESP32
+            run: |
+              platformio run -e headless-esp32-4mb
+
+          - name: Build for ESP32-S3
+            run: |
+              platformio run -e headless-esp32s3-4mb
+
+          - name: Build for ESP32-P4
+            run: |
+              platformio run -e m5stack-tab5
+
+          - name: Build for ESP32-C6
+            run: |
+              platformio run -e arduino-nesso-n1
+
+          - name: Build for ESP32-C5
+            run: |
+              platformio run -e NM-CYD-C5

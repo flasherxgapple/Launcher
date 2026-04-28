@@ -59,7 +59,7 @@ volatile bool DownPress = false;
 volatile bool SelPress = false;
 volatile bool EscPress = false;
 volatile bool AnyKeyPress = false;
-TouchPoint touchPoint;
+LTouchPoint touchPoint;
 keyStroke KeyStroke;
 
 #if defined(HAS_TOUCH)
@@ -362,7 +362,7 @@ void setup() {
 #if defined(HAS_TOUCH)
         // Enable touch the center of the screen to get into Launcher
         if (touchPoint.pressed) {
-            TouchPoint *t = &touchPoint;
+            LTouchPoint *t = &touchPoint;
             int third_x = tftWidth / 3;
             int third_y = tftHeight / 3;
             if (t->x > third_x * 1 && t->x < third_x * 2 && ((t->y > third_y && t->y < third_y * 2))) {

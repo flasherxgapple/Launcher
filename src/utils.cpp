@@ -4,7 +4,7 @@
 ** Function: touchHeatMap
 ** Touchscreen Mapping, include this function after reading the touchPoint
 **********************************************************************/
-void touchHeatMap(struct TouchPoint t) {
+void touchHeatMap(struct LTouchPoint t) {
     int third_x = tftWidth / 3;
     int third_y = tftHeight / 3;
 

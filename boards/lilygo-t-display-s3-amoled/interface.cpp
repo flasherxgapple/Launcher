@@ -54,7 +54,7 @@ void _setBrightness(uint8_t brightval) {
     // amoled.setBrightness(brightval*254/100);
 }
 
-struct TouchPointPro {
+struct LTouchPointPro {
     int16_t x[5];
     int16_t y[5];
 };
@@ -64,7 +64,7 @@ struct TouchPointPro {
 **********************************************************************/
 void InputHandler(void) {
     static long tm = 0;
-    TouchPointPro t;
+    LTouchPointPro t;
     if (millis() - tm > 200 || LongPress) {
         if (amoled.getPoint(t.x, t.y)) {
             tm = millis();

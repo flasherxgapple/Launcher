@@ -83,9 +83,12 @@
             - { env: "elecrow-28B"                }
             - { env: "elecrow-35B"                }
             - { env: "elecrow-35Bv2_2"            }
+            - { env: "waveshare-esp32-s3-lcd-147" }
 
       steps:
           - uses: actions/checkout@v4
+            with:
+              submodules: true
 
           - id: build
             name: setup Python
@@ -93,13 +96,38 @@
             with:
               python-version: "3.13"
 
+          - name: Cache pip
+            uses: actions/cache@v4
+            with:
+              path: ~/.cache/pip
+              key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+              restore-keys: |
+                ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+                ${{ runner.os }}-pip-
+
+          - name: Cache PlatformIO Framework
+            uses: actions/cache@v4
+            with:
+              path: |
+                ~/.platformio
+              key: ${{ runner.os }}-platformio-${{ hashFiles('platformio.ini') }}
+              restore-keys: |
+                ${{ runner.os }}-platformio-${{ hashFiles('platformio.ini') }}
+                ${{ runner.os }}-platformio-
+
+          - name: PIO libraries cache
+            uses: actions/cache@v4
+            with:
+              path: |
+                .pio/libdeps
+              key: ${{ runner.os }}-pio-${{ matrix.board.env }}-${{ hashFiles('platformio.ini') }}
+              restore-keys: |
+                ${{ runner.os }}-pio-${{ matrix.board.env }}-${{ hashFiles('platformio.ini') }}
+                ${{ runner.os }}-pio-${{ matrix.board.env }}-
+
           - name: Install dependencies
             run: |
-              pip install requests esptool
-
-          - name: Install PlatformIO Core
-            run: |
-              pip install platformio
+              pip install requests esptool platformio
 
               if [[ "${{ github.ref_type }}" == "tag" ]]; then
                 version=${{ github.ref_name }}

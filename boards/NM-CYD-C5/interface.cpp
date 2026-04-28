@@ -82,7 +82,7 @@ void InputHandler(void) {
     static long tm = millis();
     if (millis() - tm > 250 || LongPress) { // I know R3CK.. I Should NOT nest if statements..
         // but it is needed to not keep SPI bus used without need, it save resources
-        TouchPoint t;
+        LTouchPoint t;
 #ifdef DONT_USE_INPUT_TASK
         checkPowerSaveTime();
 #endif
