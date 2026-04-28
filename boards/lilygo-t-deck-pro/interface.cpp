@@ -7,6 +7,7 @@ TouchDrvCSTXXX touch;
 #include <bq27220.h>
 BQ27220 bq;
 
+#define XPOWERS_CHIP_BQ25896
 #include <XPowersLib.h>
 XPowersPPM PPM;
 
