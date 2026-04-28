@@ -296,8 +296,6 @@ void setup() {
 
 #endif
     tft->setRotation(rotation);
-    tft->setTextFont(1);
-    tft->setTextWrap(false);
     tft->setTextColor(FGCOLOR, BGCOLOR);
     if (rotation & 0b1) {
 #if defined(HAS_TOUCH)

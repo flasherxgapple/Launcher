@@ -81,9 +81,11 @@ void wifiConnect(String ssid, int encryptation, bool isAP) {
         }
     } else { // Running in Access point mode
         IPAddress AP_GATEWAY(172, 0, 0, 1);
+#if !CONFIG_ESP_HOSTED_ENABLED
         WiFi.softAPdisconnect(true);
         WiFi.disconnect(true, true);
         vTaskDelay(50 / portTICK_PERIOD_MS);
+#endif
         WiFi.mode(WIFI_AP);
         WiFi.setSleep(false);
         WiFi.softAPConfig(AP_GATEWAY, AP_GATEWAY, IPAddress(255, 255, 255, 0));
