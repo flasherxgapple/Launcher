@@ -8,7 +8,7 @@ TouchDrvGT911 touch;
 #include <bq27220.h>
 BQ27220 bq;
 
-XPOWERS_CHIP_BQ25896
+#define XPOWERS_CHIP_BQ25896
 #include <XPowersLib.h>
 XPowersPPM PPM;
 
